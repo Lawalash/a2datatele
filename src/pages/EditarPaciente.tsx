@@ -1,14 +1,15 @@
 import { useState, useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
-import { 
-  ArrowLeft, 
-  Save, 
+import {
+  ArrowLeft,
+  Save,
   MessageCircle,
   User,
   MapPin,
   CreditCard,
   Calendar,
-  Mail
+  Mail,
+  Loader2,
 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -24,10 +25,14 @@ import {
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Separator } from '@/components/ui/separator';
-import { pacientes, calcularValorPlano } from '@/data/mock';
+import { usePatient, usePricingPlans } from '@/hooks/usePatients';
+import { useUpdatePatient } from '@/hooks/useMutatePatient';
+import { useAuth } from '@/hooks/useAuth';
+import { calcularValorPlano } from '@/services/patients';
 import type { TipoPlano, FormaPagamento, Sexo } from '@/types';
+import { STATUS_LABELS } from '@/types';
 import { formatCEP, formatCurrency, removeMask } from '@/utils/formatters';
-import { toast } from 'sonner';
+
 
 const tiposPlano: TipoPlano[] = [
   'Telemedicina Individual',
@@ -41,44 +46,77 @@ const formasPagamento: FormaPagamento[] = ['Cartão', 'Boleto'];
 export function EditarPaciente() {
   const { id } = useParams<{ id: string }>();
   const navigate = useNavigate();
-  const [carregando, setCarregando] = useState(false);
-  
-  // Encontra o paciente nos dados mockados
-  const paciente = pacientes.find(p => p.id === id);
+  const { isAdmin, isOperadora } = useAuth();
+  const { data: paciente, isLoading, error: fetchError } = usePatient(id);
+  const { data: pricingPlans } = usePricingPlans();
+  const updateMutation = useUpdatePatient();
 
   const [formData, setFormData] = useState({
-    // Dados pessoais (editáveis)
-    dataNascimento: paciente?.dataNascimento || '',
-    sexo: (paciente?.sexo as Sexo) || '',
-    email: paciente?.email || '',
-    
-    // Endereço (editáveis)
-    cep: paciente?.endereco?.cep || '',
-    logradouro: paciente?.endereco?.logradouro || '',
-    numero: paciente?.endereco?.numero || '',
-    complemento: paciente?.endereco?.complemento || '',
-    bairro: paciente?.endereco?.bairro || '',
-    cidade: paciente?.endereco?.cidade || '',
-    uf: paciente?.endereco?.uf || '',
-    
-    // Plano (editáveis)
-    tipoPlano: (paciente?.plano?.tipo as TipoPlano) || '',
-    formaPagamento: (paciente?.plano?.formaPagamento as FormaPagamento) || '',
-    funeral: paciente?.plano?.funeral || false,
-    telepsicologia: paciente?.plano?.telepsicologia || false,
-    presencial: paciente?.plano?.presencial || false,
+    dataNascimento: '',
+    sexo: '' as Sexo | '',
+    email: '',
+    cep: '',
+    logradouro: '',
+    numero: '',
+    complemento: '',
+    bairro: '',
+    cidade: '',
+    uf: '',
+    tipoPlano: '' as TipoPlano | '',
+    formaPagamento: '' as FormaPagamento | '',
+    funeral: false,
+    telepsicologia: false,
+    presencial: false,
   });
 
-  const [valorPlano, setValorPlano] = useState(paciente?.plano?.valor || 0);
+  const [valorPlano, setValorPlano] = useState(0);
 
+  // Carregar dados do paciente no form
   useEffect(() => {
-    if (formData.tipoPlano && formData.formaPagamento) {
-      const valor = calcularValorPlano(formData.tipoPlano, formData.formaPagamento);
+    if (paciente) {
+      setFormData({
+        dataNascimento: paciente.data_nascimento || '',
+        sexo: (paciente.sexo as Sexo) || '',
+        email: paciente.email || '',
+        cep: paciente.cep || '',
+        logradouro: paciente.logradouro || '',
+        numero: paciente.numero || '',
+        complemento: paciente.complemento || '',
+        bairro: paciente.bairro || '',
+        cidade: paciente.cidade || '',
+        uf: paciente.uf || '',
+        tipoPlano: (paciente.plano as TipoPlano) || '',
+        formaPagamento: (paciente.forma_pagamento as FormaPagamento) || '',
+        funeral: paciente.funeral || false,
+        telepsicologia: paciente.telepsicologia || false,
+        presencial: paciente.presencial || false,
+      });
+      setValorPlano(paciente.valor_plano || 0);
+    }
+  }, [paciente]);
+
+  // Recalcular valor quando plano ou forma de pagamento mudar
+  useEffect(() => {
+    if (formData.tipoPlano && formData.formaPagamento && pricingPlans) {
+      const valor = calcularValorPlano(
+        pricingPlans,
+        formData.tipoPlano,
+        formData.formaPagamento
+      );
       setValorPlano(valor);
     }
-  }, [formData.tipoPlano, formData.formaPagamento]);
+  }, [formData.tipoPlano, formData.formaPagamento, pricingPlans]);
 
-  if (!paciente) {
+  if (isLoading) {
+    return (
+      <div className="flex items-center justify-center py-20">
+        <Loader2 className="w-8 h-8 text-emerald-600 animate-spin" />
+        <span className="ml-3 text-slate-500">Carregando paciente...</span>
+      </div>
+    );
+  }
+
+  if (fetchError || !paciente) {
     return (
       <div className="text-center py-12">
         <p className="text-slate-500">Paciente não encontrado</p>
@@ -90,29 +128,38 @@ export function EditarPaciente() {
   }
 
   const handleChange = (field: string, value: string | boolean) => {
-    setFormData(prev => ({ ...prev, [field]: value }));
+    setFormData((prev) => ({ ...prev, [field]: value }));
   };
 
-  const handleCEPChange = (value: string) => {
+  const handleCEPChange = async (value: string) => {
     const formatted = formatCEP(value);
     handleChange('cep', formatted);
-    
-    // Simula busca de CEP (em produção, usaria uma API)
-    if (removeMask(formatted).length === 8) {
-      // Simula delay
-      setTimeout(() => {
-        handleChange('logradouro', 'Rua Exemplo');
-        handleChange('bairro', 'Bairro Exemplo');
-        handleChange('cidade', 'São Paulo');
-        handleChange('uf', 'SP');
-      }, 500);
+
+    const cleaned = removeMask(formatted);
+    if (cleaned.length === 8) {
+      try {
+        const response = await fetch(`https://viacep.com.br/ws/${cleaned}/json/`);
+        const data = await response.json();
+        if (!data.erro) {
+          setFormData((prev) => ({
+            ...prev,
+            cep: formatted,
+            logradouro: data.logradouro || prev.logradouro,
+            bairro: data.bairro || prev.bairro,
+            cidade: data.localidade || prev.cidade,
+            uf: data.uf || prev.uf,
+          }));
+        }
+      } catch {
+        // Silenciosamente falha se ViaCEP não responder
+      }
     }
   };
 
   const handleWhatsApp = () => {
     const mensagem = encodeURIComponent(
       `Olá ${paciente.nome}! Sou da Quality Life Telemedicina. ` +
-      `Gostaria de confirmar algumas informações do seu cadastro. Poderia me ajudar?`
+        `Gostaria de confirmar algumas informações do seu cadastro. Poderia me ajudar?`
     );
     const numero = removeMask(paciente.celular);
     window.open(`https://wa.me/55${numero}?text=${mensagem}`, '_blank');
@@ -120,14 +167,47 @@ export function EditarPaciente() {
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    setCarregando(true);
-    
-    // Simula o salvamento
-    await new Promise(resolve => setTimeout(resolve, 1000));
-    
-    toast.success('Paciente atualizado com sucesso!');
-    setCarregando(false);
-    navigate('/pacientes');
+
+    // Determinar status atualizado
+    let newStatus = paciente.status;
+    const hasAddress = formData.cep && formData.logradouro && formData.bairro && formData.cidade && formData.uf;
+    const hasPlan = formData.tipoPlano && formData.formaPagamento;
+    const hasPersonal = formData.dataNascimento && formData.sexo && formData.email;
+
+    if (hasAddress && hasPlan && hasPersonal) {
+      if (paciente.status === 'pre_cadastro' || paciente.status === 'incompleto') {
+        newStatus = 'completo';
+      }
+    } else if (paciente.status === 'pre_cadastro') {
+      newStatus = 'incompleto';
+    }
+
+    const result = await updateMutation.mutateAsync({
+      id: paciente.id,
+      data: {
+        data_nascimento: formData.dataNascimento || null,
+        sexo: (formData.sexo as Sexo) || null,
+        email: formData.email || null,
+        cep: removeMask(formData.cep) || null,
+        logradouro: formData.logradouro || null,
+        numero: formData.numero || null,
+        complemento: formData.complemento || null,
+        bairro: formData.bairro || null,
+        cidade: formData.cidade || null,
+        uf: formData.uf || null,
+        plano: formData.tipoPlano || null,
+        forma_pagamento: formData.formaPagamento || null,
+        funeral: formData.funeral,
+        telepsicologia: formData.telepsicologia,
+        presencial: formData.presencial,
+        valor_plano: valorPlano || null,
+        status: newStatus,
+      },
+    });
+
+    if (!result.error) {
+      navigate('/pacientes');
+    }
   };
 
   return (
@@ -135,8 +215,8 @@ export function EditarPaciente() {
       {/* Header */}
       <div className="flex items-center justify-between">
         <div className="flex items-center gap-4">
-          <Button 
-            variant="outline" 
+          <Button
+            variant="outline"
             size="icon"
             onClick={() => navigate('/pacientes')}
           >
@@ -172,7 +252,9 @@ export function EditarPaciente() {
           </div>
           <div>
             <Label className="text-slate-500">CPF</Label>
-            <p className="font-medium">{paciente.cpf}</p>
+            <p className="font-medium">
+              {isAdmin || isOperadora ? paciente.cpf : `***.${paciente.cpf.slice(3, 6)}.${paciente.cpf.slice(6, 9)}-**`}
+            </p>
           </div>
           <div>
             <Label className="text-slate-500">Celular</Label>
@@ -181,7 +263,9 @@ export function EditarPaciente() {
           <div>
             <Label className="text-slate-500">Status</Label>
             <div>
-              <Badge variant="secondary">{paciente.status}</Badge>
+              <Badge variant="secondary">
+                {STATUS_LABELS[paciente.status]}
+              </Badge>
             </div>
           </div>
           {paciente.diagnostico && (
@@ -326,8 +410,14 @@ export function EditarPaciente() {
                       <SelectValue placeholder="UF" />
                     </SelectTrigger>
                     <SelectContent>
-                      {['AC', 'AL', 'AP', 'AM', 'BA', 'CE', 'DF', 'ES', 'GO', 'MA', 'MT', 'MS', 'MG', 'PA', 'PB', 'PR', 'PE', 'PI', 'RJ', 'RN', 'RS', 'RO', 'RR', 'SC', 'SP', 'SE', 'TO'].map(uf => (
-                        <SelectItem key={uf} value={uf}>{uf}</SelectItem>
+                      {[
+                        'AC', 'AL', 'AP', 'AM', 'BA', 'CE', 'DF', 'ES', 'GO',
+                        'MA', 'MT', 'MS', 'MG', 'PA', 'PB', 'PR', 'PE', 'PI',
+                        'RJ', 'RN', 'RS', 'RO', 'RR', 'SC', 'SP', 'SE', 'TO',
+                      ].map((uf) => (
+                        <SelectItem key={uf} value={uf}>
+                          {uf}
+                        </SelectItem>
                       ))}
                     </SelectContent>
                   </Select>
@@ -404,21 +494,27 @@ export function EditarPaciente() {
                   <label className="flex items-center gap-2 cursor-pointer">
                     <Checkbox
                       checked={formData.funeral}
-                      onCheckedChange={(checked) => handleChange('funeral', checked as boolean)}
+                      onCheckedChange={(checked) =>
+                        handleChange('funeral', checked as boolean)
+                      }
                     />
                     <span>Funeral</span>
                   </label>
                   <label className="flex items-center gap-2 cursor-pointer">
                     <Checkbox
                       checked={formData.telepsicologia}
-                      onCheckedChange={(checked) => handleChange('telepsicologia', checked as boolean)}
+                      onCheckedChange={(checked) =>
+                        handleChange('telepsicologia', checked as boolean)
+                      }
                     />
                     <span>Telepsicologia</span>
                   </label>
                   <label className="flex items-center gap-2 cursor-pointer">
                     <Checkbox
                       checked={formData.presencial}
-                      onCheckedChange={(checked) => handleChange('presencial', checked as boolean)}
+                      onCheckedChange={(checked) =>
+                        handleChange('presencial', checked as boolean)
+                      }
                     />
                     <span>Presencial</span>
                   </label>
@@ -439,9 +535,9 @@ export function EditarPaciente() {
             <Button
               type="submit"
               className="bg-emerald-600 hover:bg-emerald-700"
-              disabled={carregando}
+              disabled={updateMutation.isPending}
             >
-              {carregando ? (
+              {updateMutation.isPending ? (
                 <span className="flex items-center gap-2">
                   <svg className="animate-spin h-4 w-4" viewBox="0 0 24 24">
                     <circle

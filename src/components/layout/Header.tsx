@@ -1,3 +1,4 @@
+import { Link } from 'react-router-dom';
 import { Bell, User, ChevronDown } from 'lucide-react';
 import { Avatar, AvatarFallback } from '@/components/ui/avatar';
 import { Badge } from '@/components/ui/badge';
@@ -10,21 +11,20 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
-import type { Usuario, Notificacao } from '@/types';
+import { useAuth } from '@/hooks/useAuth';
+import { useNotifications } from '@/hooks/useNotifications';
 import { formatDateTime } from '@/utils/formatters';
 
-interface HeaderProps {
-  usuario: Usuario;
-  notificacoes: Notificacao[];
-  onMarcarLida?: (id: string) => void;
-}
+export function Header() {
+  const { user, role, logout } = useAuth();
+  const { notifications, unreadCount, markAsRead } = useNotifications();
 
-export function Header({ usuario, notificacoes, onMarcarLida }: HeaderProps) {
-  const notificacoesNaoLidas = notificacoes.filter(n => !n.lida);
+  const userName = user?.email?.split('@')[0] || 'Usuário';
+  const initials = userName.slice(0, 2).toUpperCase();
+  const roleLabel = role === 'admin' ? 'Admin' : role === 'operadora' ? 'Operadora' : 'Viewer';
 
   return (
     <header className="h-16 bg-white border-b border-slate-200 flex items-center justify-between px-6 sticky top-0 z-40">
-      {/* Breadcrumb ou título pode ir aqui */}
       <div />
 
       {/* Right side */}
@@ -34,9 +34,9 @@ export function Header({ usuario, notificacoes, onMarcarLida }: HeaderProps) {
           <DropdownMenuTrigger asChild>
             <Button variant="ghost" size="icon" className="relative">
               <Bell className="w-5 h-5 text-slate-600" />
-              {notificacoesNaoLidas.length > 0 && (
-                <span className="absolute -top-1 -right-1 w-5 h-5 bg-red-500 text-white text-xs rounded-full flex items-center justify-center font-medium">
-                  {notificacoesNaoLidas.length}
+              {unreadCount > 0 && (
+                <span className="absolute -top-1 -right-1 w-5 h-5 bg-red-500 text-white text-xs rounded-full flex items-center justify-center font-medium animate-pulse">
+                  {unreadCount}
                 </span>
               )}
             </Button>
@@ -44,38 +44,51 @@ export function Header({ usuario, notificacoes, onMarcarLida }: HeaderProps) {
           <DropdownMenuContent align="end" className="w-80">
             <DropdownMenuLabel className="flex items-center justify-between">
               <span>Notificações</span>
-              {notificacoesNaoLidas.length > 0 && (
-                <span className="text-xs text-slate-500">
-                  {notificacoesNaoLidas.length} não lidas
+              {unreadCount > 0 && (
+                <span className="text-xs text-red-500 font-medium">
+                  {unreadCount} pendente(s)
                 </span>
               )}
             </DropdownMenuLabel>
             <DropdownMenuSeparator />
-            {notificacoes.length === 0 ? (
+            {notifications.length === 0 ? (
               <div className="px-4 py-8 text-center text-slate-500 text-sm">
                 Nenhuma notificação
               </div>
             ) : (
               <div className="max-h-80 overflow-y-auto">
-                {notificacoes.map((notif) => (
+                {notifications.map((notif) => (
                   <DropdownMenuItem
                     key={notif.id}
                     className="flex flex-col items-start p-3 cursor-pointer"
-                    onClick={() => onMarcarLida?.(notif.id)}
+                    onClick={() => markAsRead(notif.id)}
                   >
                     <div className="flex items-start justify-between w-full gap-2">
-                      <span className={`font-medium text-sm ${!notif.lida ? 'text-slate-900' : 'text-slate-600'}`}>
+                      <span
+                        className={`font-medium text-sm ${
+                          !notif.lida ? 'text-slate-900' : 'text-slate-600'
+                        }`}
+                      >
                         {notif.titulo}
                       </span>
                       {!notif.lida && (
-                        <span className="w-2 h-2 bg-emerald-500 rounded-full flex-shrink-0 mt-1" />
+                        <span className="w-2 h-2 bg-red-500 rounded-full flex-shrink-0 mt-1" />
                       )}
                     </div>
                     <span className="text-xs text-slate-500 mt-1">
                       {notif.mensagem}
                     </span>
+                    {notif.patientId && (
+                      <Link
+                        to={`/pacientes/${notif.patientId}`}
+                        className="text-xs text-emerald-600 hover:underline mt-1"
+                        onClick={(e) => e.stopPropagation()}
+                      >
+                        Ver paciente →
+                      </Link>
+                    )}
                     <span className="text-xs text-slate-400 mt-1">
-                      {formatDateTime(notif.data)}
+                      Enviado em {formatDateTime(notif.data)}
                     </span>
                   </DropdownMenuItem>
                 ))}
@@ -90,15 +103,15 @@ export function Header({ usuario, notificacoes, onMarcarLida }: HeaderProps) {
             <Button variant="ghost" className="flex items-center gap-3 h-10 px-2">
               <Avatar className="w-8 h-8">
                 <AvatarFallback className="bg-emerald-100 text-emerald-700 text-sm font-medium">
-                  {usuario.nome.split(' ').map(n => n[0]).join('').slice(0, 2).toUpperCase()}
+                  {initials}
                 </AvatarFallback>
               </Avatar>
               <div className="hidden md:flex flex-col items-start">
                 <span className="text-sm font-medium text-slate-900 leading-tight">
-                  {usuario.nome}
+                  {user?.email}
                 </span>
                 <Badge variant="secondary" className="text-xs px-1 py-0 h-4 mt-0.5">
-                  {usuario.role}
+                  {roleLabel}
                 </Badge>
               </div>
               <ChevronDown className="w-4 h-4 text-slate-400 hidden md:block" />
@@ -107,11 +120,15 @@ export function Header({ usuario, notificacoes, onMarcarLida }: HeaderProps) {
           <DropdownMenuContent align="end">
             <DropdownMenuLabel>Minha Conta</DropdownMenuLabel>
             <DropdownMenuSeparator />
-            <DropdownMenuItem>
-              <User className="w-4 h-4 mr-2" />
-              Perfil
+            <Link to="/configuracoes">
+              <DropdownMenuItem>
+                <User className="w-4 h-4 mr-2" />
+                Configurações
+              </DropdownMenuItem>
+            </Link>
+            <DropdownMenuItem onClick={() => logout()}>
+              Sair
             </DropdownMenuItem>
-            <DropdownMenuItem>Configurações</DropdownMenuItem>
           </DropdownMenuContent>
         </DropdownMenu>
       </div>

@@ -5,22 +5,45 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Card, CardContent, CardHeader } from '@/components/ui/card';
+import { useAuth } from '@/hooks/useAuth';
+import { toast } from 'sonner';
 
 export function Login() {
   const navigate = useNavigate();
+  const { login, isAuthenticated } = useAuth();
   const [email, setEmail] = useState('');
   const [senha, setSenha] = useState('');
   const [mostrarSenha, setMostrarSenha] = useState(false);
   const [carregando, setCarregando] = useState(false);
 
+  // Se já está autenticado, redireciona
+  if (isAuthenticated) {
+    navigate('/dashboard', { replace: true });
+    return null;
+  }
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+
+    if (!email.trim() || !senha.trim()) {
+      toast.error('Preencha todos os campos.');
+      return;
+    }
+
     setCarregando(true);
-    
-    // Simula delay de autenticação
-    await new Promise(resolve => setTimeout(resolve, 800));
-    
+    const { error } = await login(email, senha);
     setCarregando(false);
+
+    if (error) {
+      if (error.includes('Invalid login credentials')) {
+        toast.error('E-mail ou senha incorretos.');
+      } else {
+        toast.error(error);
+      }
+      return;
+    }
+
+    toast.success('Login realizado com sucesso!');
     navigate('/dashboard');
   };
 
@@ -36,7 +59,7 @@ export function Login() {
             <p className="text-slate-500">Sistema de Gestão - Telemedicina</p>
           </div>
         </CardHeader>
-        
+
         <CardContent>
           <form onSubmit={handleSubmit} className="space-y-6">
             <div className="space-y-2">
@@ -49,6 +72,7 @@ export function Login() {
                 onChange={(e) => setEmail(e.target.value)}
                 required
                 className="h-11"
+                autoComplete="email"
               />
             </div>
 
@@ -63,6 +87,7 @@ export function Login() {
                   onChange={(e) => setSenha(e.target.value)}
                   required
                   className="h-11 pr-10"
+                  autoComplete="current-password"
                 />
                 <button
                   type="button"
@@ -76,16 +101,6 @@ export function Login() {
                   )}
                 </button>
               </div>
-            </div>
-
-            <div className="flex items-center justify-between text-sm">
-              <label className="flex items-center gap-2 cursor-pointer">
-                <input type="checkbox" className="rounded border-slate-300" />
-                <span className="text-slate-600">Lembrar-me</span>
-              </label>
-              <a href="#" className="text-emerald-600 hover:text-emerald-700 font-medium">
-                Esqueceu a senha?
-              </a>
             </div>
 
             <Button
@@ -118,11 +133,6 @@ export function Login() {
               )}
             </Button>
           </form>
-
-          <div className="mt-6 text-center text-sm text-slate-500">
-            <p>Dados de demonstração:</p>
-            <p className="font-mono text-xs mt-1">fernando@qualitylife.com.br / qualquer senha</p>
-          </div>
         </CardContent>
       </Card>
     </div>

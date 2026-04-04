@@ -15,6 +15,8 @@ import {
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import type { TipoConsulta } from '@/types';
 import { formatCPF, formatPhone, removeMask } from '@/utils/formatters';
+import { validateCPF } from '@/utils/cpfValidator';
+import { useCreatePatient } from '@/hooks/useMutatePatient';
 import { toast } from 'sonner';
 
 const tiposConsulta: TipoConsulta[] = [
@@ -27,72 +29,73 @@ const tiposConsulta: TipoConsulta[] = [
 
 export function NovoPaciente() {
   const navigate = useNavigate();
-  const [carregando, setCarregando] = useState(false);
+  const createMutation = useCreatePatient();
   const [formData, setFormData] = useState({
     nome: '',
     cpf: '',
     celular: '',
+    email: '',
     diagnostico: '',
     tipoConsulta: '',
   });
 
   const handleChange = (field: string, value: string) => {
     let formattedValue = value;
-    
+
     if (field === 'cpf') {
       formattedValue = formatCPF(value);
     } else if (field === 'celular') {
       formattedValue = formatPhone(value);
     }
-    
-    setFormData(prev => ({ ...prev, [field]: formattedValue }));
+
+    setFormData((prev) => ({ ...prev, [field]: formattedValue }));
   };
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    
+
     // Validação básica
     if (!formData.nome.trim()) {
       toast.error('Nome é obrigatório');
       return;
     }
-    if (removeMask(formData.cpf).length !== 11) {
-      toast.error('CPF inválido');
+
+    const cpfClean = removeMask(formData.cpf);
+    if (cpfClean.length !== 11) {
+      toast.error('CPF deve ter 11 dígitos');
       return;
     }
+
+    if (!validateCPF(cpfClean)) {
+      toast.error('CPF inválido. Verifique os dígitos.');
+      return;
+    }
+
     if (removeMask(formData.celular).length < 10) {
       toast.error('Celular inválido');
       return;
     }
 
-    setCarregando(true);
-    
-    // Simula o salvamento
-    await new Promise(resolve => setTimeout(resolve, 1000));
-    
-    // Aqui você adicionaria o paciente aos dados mockados
-    // pacientes.push({
-    //   id: generateId(),
-    //   nome: formData.nome,
-    //   cpf: formData.cpf,
-    //   celular: formData.celular,
-    //   diagnostico: formData.diagnostico,
-    //   tipoConsulta: formData.tipoConsulta as TipoConsulta,
-    //   status: 'PRÉ-CADASTRO',
-    //   dataCadastro: new Date().toISOString().split('T')[0],
-    // });
-    
-    toast.success('Paciente cadastrado com sucesso!');
-    setCarregando(false);
-    navigate('/pacientes');
+    const result = await createMutation.mutateAsync({
+      nome: formData.nome.trim(),
+      cpf: cpfClean,
+      celular: removeMask(formData.celular),
+      email: formData.email?.trim() || undefined,
+      diagnostico: formData.diagnostico?.trim() || undefined,
+      tipo_consulta: formData.tipoConsulta || undefined,
+    });
+
+    if (!result.error) {
+      navigate('/pacientes');
+    }
   };
 
   return (
     <div className="space-y-6 max-w-4xl mx-auto">
       {/* Header */}
       <div className="flex items-center gap-4">
-        <Button 
-          variant="outline" 
+        <Button
+          variant="outline"
           size="icon"
           onClick={() => navigate('/pacientes')}
         >
@@ -157,6 +160,19 @@ export function NovoPaciente() {
               </div>
             </div>
 
+            {/* Email */}
+            <div className="space-y-2">
+              <Label htmlFor="email">E-mail</Label>
+              <Input
+                id="email"
+                type="email"
+                placeholder="paciente@email.com"
+                value={formData.email}
+                onChange={(e) => handleChange('email', e.target.value)}
+                className="h-11"
+              />
+            </div>
+
             {/* Tipo de Consulta */}
             <div className="space-y-2">
               <Label htmlFor="tipoConsulta">Tipo de Consulta</Label>
@@ -201,9 +217,9 @@ export function NovoPaciente() {
               <Button
                 type="submit"
                 className="bg-emerald-600 hover:bg-emerald-700"
-                disabled={carregando}
+                disabled={createMutation.isPending}
               >
-                {carregando ? (
+                {createMutation.isPending ? (
                   <span className="flex items-center gap-2">
                     <svg className="animate-spin h-4 w-4" viewBox="0 0 24 24">
                       <circle

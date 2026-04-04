@@ -1,11 +1,21 @@
-import { User, Bell, Shield } from 'lucide-react';
+import { User, Bell, Shield, LogOut } from 'lucide-react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Switch } from '@/components/ui/switch';
 import { Label } from '@/components/ui/label';
 import { Separator } from '@/components/ui/separator';
+import { useAuth } from '@/hooks/useAuth';
 
 export function Configuracoes() {
+  const { user, role, logout } = useAuth();
+
+  const roleLabel =
+    role === 'admin'
+      ? 'Administrador'
+      : role === 'operadora'
+        ? 'Operadora'
+        : 'Visualizador';
+
   return (
     <div className="space-y-6 max-w-4xl mx-auto">
       {/* Header */}
@@ -25,21 +35,20 @@ export function Configuracoes() {
         <CardContent className="space-y-4">
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             <div>
-              <Label className="text-slate-500">Nome</Label>
-              <p className="font-medium">Fernando Silva</p>
-            </div>
-            <div>
               <Label className="text-slate-500">E-mail</Label>
-              <p className="font-medium">fernando@qualitylife.com.br</p>
+              <p className="font-medium">{user?.email || '-'}</p>
             </div>
             <div>
               <Label className="text-slate-500">Função</Label>
-              <p className="font-medium">Administrador</p>
+              <p className="font-medium">{roleLabel}</p>
+            </div>
+            <div>
+              <Label className="text-slate-500">ID da Sessão</Label>
+              <p className="font-mono text-xs text-slate-400">
+                {user?.id?.slice(0, 12)}...
+              </p>
             </div>
           </div>
-          <Button variant="outline" size="sm">
-            Editar Perfil
-          </Button>
         </CardContent>
       </Card>
 
@@ -54,26 +63,22 @@ export function Configuracoes() {
         <CardContent className="space-y-4">
           <div className="flex items-center justify-between">
             <div>
-              <p className="font-medium">Notificações por e-mail</p>
-              <p className="text-sm text-slate-500">Receba atualizações importantes no seu e-mail</p>
-            </div>
-            <Switch defaultChecked />
-          </div>
-          <Separator />
-          <div className="flex items-center justify-between">
-            <div>
               <p className="font-medium">Alertas de planos vencendo</p>
-              <p className="text-sm text-slate-500">Seja notificado quando planos estiverem próximos do vencimento</p>
+              <p className="text-sm text-slate-500">
+                Seja notificado quando planos estiverem próximos do vencimento
+              </p>
             </div>
             <Switch defaultChecked />
           </div>
           <Separator />
           <div className="flex items-center justify-between">
             <div>
-              <p className="font-medium">Resumo semanal</p>
-              <p className="text-sm text-slate-500">Receba um resumo semanal da operação</p>
+              <p className="font-medium">Alerta de 48h úteis (pendente ativação)</p>
+              <p className="text-sm text-slate-500">
+                Notificação quando a Quality Life ultrapassar o prazo de ativação
+              </p>
             </div>
-            <Switch />
+            <Switch defaultChecked />
           </div>
         </CardContent>
       </Card>
@@ -89,21 +94,19 @@ export function Configuracoes() {
         <CardContent className="space-y-4">
           <div className="flex items-center justify-between">
             <div>
-              <p className="font-medium">Autenticação de dois fatores</p>
-              <p className="text-sm text-slate-500">Adicione uma camada extra de segurança</p>
+              <p className="font-medium">Sessão ativa</p>
+              <p className="text-sm text-slate-500">
+                Sua sessão expira após 8 horas de inatividade
+              </p>
             </div>
-            <Button variant="outline" size="sm">
-              Configurar
-            </Button>
-          </div>
-          <Separator />
-          <div className="flex items-center justify-between">
-            <div>
-              <p className="font-medium">Alterar senha</p>
-              <p className="text-sm text-slate-500">Atualize sua senha periodicamente</p>
-            </div>
-            <Button variant="outline" size="sm">
-              Alterar
+            <Button
+              variant="outline"
+              size="sm"
+              className="text-red-600 border-red-300 hover:bg-red-50"
+              onClick={() => logout()}
+            >
+              <LogOut className="w-4 h-4 mr-2" />
+              Encerrar Sessão
             </Button>
           </div>
         </CardContent>

@@ -1,29 +1,30 @@
-import { NavLink, useNavigate } from 'react-router-dom';
-import { 
-  LayoutDashboard, 
-  Users, 
-  Settings, 
+import { NavLink } from 'react-router-dom';
+import {
+  LayoutDashboard,
+  Users,
+  Settings,
   LogOut,
-  HeartPulse
+  HeartPulse,
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
+import { useAuth } from '@/hooks/useAuth';
 
-interface SidebarProps {
-  onLogout?: () => void;
-}
-
-export function Sidebar({ onLogout }: SidebarProps) {
-  const navigate = useNavigate();
+export function Sidebar() {
+  const { logout, role } = useAuth();
 
   const menuItems = [
-    { icon: LayoutDashboard, label: 'Dashboard', path: '/dashboard' },
-    { icon: Users, label: 'Pacientes', path: '/pacientes' },
-    { icon: Settings, label: 'Configurações', path: '/configuracoes' },
+    { icon: LayoutDashboard, label: 'Dashboard', path: '/dashboard', roles: ['admin', 'operadora', 'viewer'] },
+    { icon: Users, label: 'Pacientes', path: '/pacientes', roles: ['admin', 'operadora', 'viewer'] },
+    { icon: Settings, label: 'Configurações', path: '/configuracoes', roles: ['admin'] },
   ];
 
-  const handleLogout = () => {
-    onLogout?.();
-    navigate('/login');
+  // Filtra items conforme a role do usuário
+  const visibleItems = menuItems.filter(
+    (item) => role && item.roles.includes(role)
+  );
+
+  const handleLogout = async () => {
+    await logout();
   };
 
   return (
@@ -43,7 +44,7 @@ export function Sidebar({ onLogout }: SidebarProps) {
 
       {/* Navigation */}
       <nav className="flex-1 p-4 space-y-1">
-        {menuItems.map((item) => (
+        {visibleItems.map((item) => (
           <NavLink
             key={item.path}
             to={item.path}
@@ -61,6 +62,13 @@ export function Sidebar({ onLogout }: SidebarProps) {
           </NavLink>
         ))}
       </nav>
+
+      {/* Role indicator */}
+      <div className="px-6 py-2 border-t border-slate-800">
+        <p className="text-xs text-slate-500">
+          Perfil: <span className="text-slate-400 capitalize">{role || '...'}</span>
+        </p>
+      </div>
 
       {/* Logout */}
       <div className="p-4 border-t border-slate-800">

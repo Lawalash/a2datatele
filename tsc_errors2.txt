@@ -1,0 +1,12 @@
+﻿src/components/layout/Sidebar.tsx(13,25): error TS6133: 'isAdmin' is declared but its value is never read.
+src/data/mock.ts(1,15): error TS2724: '"@/types"' has no exported member named 'Paciente'. Did you mean 'Patient'?
+src/data/mock.ts(1,25): error TS2305: Module '"@/types"' has no exported member 'Usuario'.
+src/pages/EditarPaciente.tsx(35,1): error TS6133: 'toast' is declared but its value is never read.
+src/pages/Pacientes.tsx(44,31): error TS6196: 'Patient' is declared but never used.
+src/services/patients.ts(83,38): error TS2345: Argument of type 'PatientInsert' is not assignable to parameter of type 'Record<string, unknown>'.
+  Index signature for type 'string' is missing in type 'PatientInsert'.
+src/services/patients.ts(93,14): error TS18046: 'sanitized.cpf' is of type 'unknown'.
+src/services/patients.ts(94,18): error TS18046: 'sanitized.celular' is of type 'unknown'.
+src/stores/authStore.ts(19,53): error TS6133: 'get' is declared but its value is never read.
+src/utils/workingHoursCalculator.ts(8,7): error TS6133: 'HOURS_PER_DAY' is declared but its value is never read.
+src/utils/workingHoursCalculator.ts(15,10): error TS6133: 'isWithinWorkHours' is declared but its value is never read.
