@@ -2,12 +2,13 @@ import { create } from 'zustand';
 import type { Session, User } from '@supabase/supabase-js';
 import type { UserRole } from '@/types';
 import { supabase } from '@/lib/supabase';
-import { getCurrentUserRole } from '@/services/auth';
+import { getCurrentUserProfile } from '@/services/auth';
 
 interface AuthState {
   user: User | null;
   session: Session | null;
   role: UserRole | null;
+  profile: { nome: string | null } | null;
   loading: boolean;
   initialized: boolean;
 
@@ -20,6 +21,7 @@ export const useAuthStore = create<AuthState>((set) => ({
   user: null,
   session: null,
   role: null,
+  profile: null,
   loading: true,
   initialized: false,
 
@@ -38,21 +40,23 @@ export const useAuthStore = create<AuthState>((set) => ({
     const user = data.user;
     const session = data.session;
     let role: UserRole = 'viewer';
+    let profile = null;
 
     if (user) {
-      const roleResult = await getCurrentUserRole(user.id);
-      if (roleResult.data) {
-        role = roleResult.data;
+      const { data: profileData } = await getCurrentUserProfile(user.id);
+      if (profileData) {
+        profile = profileData;
+        role = profileData.role as UserRole;
       }
     }
 
-    set({ user, session, role, loading: false, initialized: true });
+    set({ user, session, role, profile, loading: false, initialized: true });
     return { error: null };
   },
 
   logout: async () => {
     await supabase.auth.signOut();
-    set({ user: null, session: null, role: null, loading: false });
+    set({ user: null, session: null, role: null, profile: null, loading: false });
   },
 
   loadSession: async () => {
@@ -63,12 +67,13 @@ export const useAuthStore = create<AuthState>((set) => ({
     } = await supabase.auth.getSession();
 
     if (session?.user) {
-      const roleResult = await getCurrentUserRole(session.user.id);
+      const { data: profileData } = await getCurrentUserProfile(session.user.id);
 
       set({
         user: session.user,
         session,
-        role: roleResult.data ?? 'viewer',
+        role: profileData?.role ?? 'viewer',
+        profile: profileData,
         loading: false,
         initialized: true,
       });
@@ -77,6 +82,7 @@ export const useAuthStore = create<AuthState>((set) => ({
         user: null,
         session: null,
         role: null,
+        profile: null,
         loading: false,
         initialized: true,
       });
@@ -85,13 +91,14 @@ export const useAuthStore = create<AuthState>((set) => ({
     // Escutar mudanças de auth
     supabase.auth.onAuthStateChange(async (event, session) => {
       if (event === 'SIGNED_OUT') {
-        set({ user: null, session: null, role: null });
+        set({ user: null, session: null, role: null, profile: null });
       } else if (session?.user) {
-        const roleResult = await getCurrentUserRole(session.user.id);
+        const { data: profileData } = await getCurrentUserProfile(session.user.id);
         set({
           user: session.user,
           session,
-          role: roleResult.data ?? 'viewer',
+          role: profileData?.role ?? 'viewer',
+          profile: profileData,
         });
       }
     });

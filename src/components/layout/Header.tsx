@@ -18,11 +18,15 @@ import { formatDateTime } from '@/utils/formatters';
 import { MobileNav } from './MobileNav';
 
 export function Header() {
-  const { user, role, logout } = useAuth();
+  const { user, role, logout, nome } = useAuth();
   const { notifications, unreadCount, markAsRead } = useNotifications();
 
-  const userName = user?.email?.split('@')[0] || 'Usuário';
-  const initials = userName.slice(0, 2).toUpperCase();
+  const initials = nome
+    .split(' ')
+    .map((n) => n[0])
+    .join('')
+    .slice(0, 2)
+    .toUpperCase();
   const roleLabel = role === 'admin' ? 'Admin' : role === 'operadora' ? 'Operadora' : 'Viewer';
 
   return (
@@ -110,13 +114,18 @@ export function Header() {
                   {initials}
                 </AvatarFallback>
               </Avatar>
-              <div className="hidden md:flex flex-col items-start">
-                <span className="text-sm font-medium text-slate-900 leading-tight">
-                  {user?.email}
+              <div className="hidden md:flex flex-col items-start leading-none gap-0.5">
+                <span className="text-sm font-semibold text-slate-900 leading-tight">
+                  {nome}
                 </span>
-                <Badge variant="secondary" className="text-xs px-1 py-0 h-4 mt-0.5">
-                  {roleLabel}
-                </Badge>
+                <div className="flex items-center gap-1.5">
+                  <span className="text-[10px] text-slate-500 font-medium">
+                    {user?.email}
+                  </span>
+                  <Badge variant="secondary" className="text-[10px] px-1 py-0 h-3.5 bg-emerald-50 text-emerald-700 border-emerald-100 uppercase">
+                    {roleLabel}
+                  </Badge>
+                </div>
               </div>
               <ChevronDown className="w-4 h-4 text-slate-400 hidden md:block" />
             </Button>
