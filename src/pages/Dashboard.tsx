@@ -1,5 +1,14 @@
 import { Link } from 'react-router-dom';
 import {
+  BarChart,
+  Bar,
+  XAxis,
+  YAxis,
+  CartesianGrid,
+  Tooltip,
+  ResponsiveContainer,
+} from 'recharts';
+import {
   TrendingUp,
   TrendingDown,
   Users,
@@ -135,6 +144,53 @@ export function Dashboard() {
           </Card>
         ))}
       </div>
+
+      {/* Gráfico de Evolução (Histórico 6 Meses) */}
+      <Card>
+        <CardHeader>
+          <CardTitle className="flex items-center gap-2">
+            <TrendingUp className="w-5 h-5 text-emerald-600" />
+            Evolução de Pacientes Ativos (6 Meses)
+          </CardTitle>
+        </CardHeader>
+        <CardContent>
+          <div className="h-72 w-full mt-4">
+            <ResponsiveContainer width="100%" height="100%">
+              <BarChart data={metricas.historico}>
+                <CartesianGrid strokeDasharray="3 3" vertical={false} />
+                <XAxis dataKey="mes" />
+                <YAxis />
+                <Tooltip
+                  cursor={{ fill: '#f1f5f9' }}
+                  content={({ active, payload }: { active?: boolean; payload?: any[] }) => {
+                    if (active && payload && payload.length) {
+                      const data = payload[0].payload;
+                      return (
+                        <div className="bg-white p-3 border rounded-lg shadow-sm">
+                          <p className="font-medium text-slate-900">{data.mes}</p>
+                          <p className="text-emerald-600 font-bold">
+                            {data.vidas} Vidas
+                          </p>
+                          <p className="text-slate-500 text-sm">
+                            Custo: {formatCurrency(data.custo)}
+                          </p>
+                        </div>
+                      );
+                    }
+                    return null;
+                  }}
+                />
+                <Bar 
+                   dataKey="vidas" 
+                   fill="#10b981" 
+                   radius={[4, 4, 0, 0]} 
+                   barSize={40}
+                />
+              </BarChart>
+            </ResponsiveContainer>
+          </div>
+        </CardContent>
+      </Card>
 
       {/* Pacientes com plano vencendo */}
       <Card>

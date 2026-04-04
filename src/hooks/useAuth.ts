@@ -18,7 +18,7 @@ export function useAuth() {
   const isViewer = role === 'viewer';
   const isAuthenticated = !!user;
 
-  const canInsertPatients = isAdmin;
+  const canInsertPatients = isAuthenticated; // Now everyone can insert
   const canUpdatePatients = isAdmin || isOperadora;
   const canExport = isAdmin || isOperadora;
 

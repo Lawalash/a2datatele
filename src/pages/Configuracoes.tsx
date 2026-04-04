@@ -5,6 +5,7 @@ import { Switch } from '@/components/ui/switch';
 import { Label } from '@/components/ui/label';
 import { Separator } from '@/components/ui/separator';
 import { useAuth } from '@/hooks/useAuth';
+import { MfaConfig } from '@/components/MfaConfig';
 
 export function Configuracoes() {
   const { user, role, logout } = useAuth();
@@ -108,6 +109,13 @@ export function Configuracoes() {
               <LogOut className="w-4 h-4 mr-2" />
               Encerrar Sessão
             </Button>
+          </div>
+          
+          <Separator />
+          
+          <div className="pt-2">
+            <h3 className="font-medium mb-4">Autenticação de Dois Fatores (MFA/2FA)</h3>
+            <MfaConfig />
           </div>
         </CardContent>
       </Card>

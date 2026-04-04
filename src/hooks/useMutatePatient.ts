@@ -3,6 +3,8 @@ import {
   createPatient,
   updatePatient,
   activatePatients,
+  deletePatient,
+  cancelPatient,
 } from '@/services/patients';
 import { insertLog } from '@/services/audit';
 import type { PatientInsert, PatientUpdate } from '@/types';
@@ -12,12 +14,12 @@ export function useCreatePatient() {
   const queryClient = useQueryClient();
 
   return useMutation({
-    mutationFn: (data: PatientInsert) => createPatient(data),
+    mutationFn: async (data: PatientInsert) => {
+      const result = await createPatient(data);
+      if (result.error) throw new Error(result.error);
+      return result;
+    },
     onSuccess: (result) => {
-      if (result.error) {
-        toast.error(result.error);
-        return;
-      }
       toast.success('Paciente cadastrado com sucesso!');
       queryClient.invalidateQueries({ queryKey: ['patients'] });
       queryClient.invalidateQueries({ queryKey: ['dashboard-metrics'] });
@@ -38,17 +40,17 @@ export function useUpdatePatient() {
   const queryClient = useQueryClient();
 
   return useMutation({
-    mutationFn: ({ id, data }: { id: string; data: PatientUpdate }) =>
-      updatePatient(id, data),
-    onSuccess: (result, variables) => {
-      if (result.error) {
-        toast.error(result.error);
-        return;
-      }
+    mutationFn: async ({ id, data }: { id: string; data: PatientUpdate }) => {
+      const result = await updatePatient(id, data);
+      if (result.error) throw new Error(result.error);
+      return result;
+    },
+    onSuccess: (_, variables) => {
       toast.success('Paciente atualizado com sucesso!');
       queryClient.invalidateQueries({ queryKey: ['patients'] });
       queryClient.invalidateQueries({ queryKey: ['patient', variables.id] });
       queryClient.invalidateQueries({ queryKey: ['dashboard-metrics'] });
+
 
       insertLog('update_patient', variables.id, {
         fields: Object.keys(variables.data),
@@ -64,15 +66,16 @@ export function useActivatePatients() {
   const queryClient = useQueryClient();
 
   return useMutation({
-    mutationFn: (ids: string[]) => activatePatients(ids),
-    onSuccess: (result, ids) => {
-      if (result.error) {
-        toast.error(result.error);
-        return;
-      }
+    mutationFn: async (ids: string[]) => {
+      const result = await activatePatients(ids);
+      if (result.error) throw new Error(result.error);
+      return result;
+    },
+    onSuccess: (_, ids) => {
       toast.success(`${ids.length} paciente(s) ativado(s) com sucesso!`);
       queryClient.invalidateQueries({ queryKey: ['patients'] });
       queryClient.invalidateQueries({ queryKey: ['dashboard-metrics'] });
+
 
       for (const id of ids) {
         insertLog('activate_patient', id);
@@ -80,6 +83,46 @@ export function useActivatePatients() {
     },
     onError: (error: Error) => {
       toast.error(error.message || 'Erro ao ativar pacientes.');
+    },
+  });
+}
+
+export function useDeletePatient() {
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: async (id: string) => {
+      const result = await deletePatient(id);
+      if (result.error) throw new Error(result.error);
+      return result;
+    },
+    onSuccess: () => {
+      toast.success('Paciente excluído com sucesso!');
+      queryClient.invalidateQueries({ queryKey: ['patients'] });
+      queryClient.invalidateQueries({ queryKey: ['dashboard-metrics'] });
+    },
+    onError: (error: Error) => {
+      toast.error(error.message || 'Erro ao excluir paciente.');
+    },
+  });
+}
+
+export function useCancelPatient() {
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: async (id: string) => {
+      const result = await cancelPatient(id);
+      if (result.error) throw new Error(result.error);
+      return result;
+    },
+    onSuccess: () => {
+      toast.success('Plano cancelado com sucesso!');
+      queryClient.invalidateQueries({ queryKey: ['patients'] });
+      queryClient.invalidateQueries({ queryKey: ['dashboard-metrics'] });
+    },
+    onError: (error: Error) => {
+      toast.error(error.message || 'Erro ao cancelar paciente.');
     },
   });
 }

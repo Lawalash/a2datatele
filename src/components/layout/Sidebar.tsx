@@ -1,20 +1,22 @@
-import { NavLink } from 'react-router-dom';
+import { NavLink, useNavigate } from 'react-router-dom';
 import {
   LayoutDashboard,
   Users,
   Settings,
   LogOut,
   HeartPulse,
+  DollarSign,
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { useAuth } from '@/hooks/useAuth';
 
-export function Sidebar() {
+export function Sidebar({ inSheet = false }: { inSheet?: boolean }) {
   const { logout, role } = useAuth();
 
   const menuItems = [
     { icon: LayoutDashboard, label: 'Dashboard', path: '/dashboard', roles: ['admin', 'operadora', 'viewer'] },
     { icon: Users, label: 'Pacientes', path: '/pacientes', roles: ['admin', 'operadora', 'viewer'] },
+    { icon: DollarSign, label: 'Planos', path: '/planos', roles: ['admin'] },
     { icon: Settings, label: 'Configurações', path: '/configuracoes', roles: ['admin'] },
   ];
 
@@ -23,12 +25,19 @@ export function Sidebar() {
     (item) => role && item.roles.includes(role)
   );
 
+  const navigate = useNavigate();
+
   const handleLogout = async () => {
     await logout();
+    navigate('/login', { replace: true });
+    window.location.reload();
   };
 
   return (
-    <aside className="fixed left-0 top-0 h-full w-64 bg-slate-900 text-white flex flex-col z-50">
+    <aside className={cn(
+      "w-64 bg-slate-900 text-white flex flex-col z-50",
+      inSheet ? "h-full" : "fixed left-0 top-0 h-full hidden lg:flex"
+    )}>
       {/* Logo */}
       <div className="p-6 border-b border-slate-800">
         <div className="flex items-center gap-3">

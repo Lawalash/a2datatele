@@ -12,11 +12,13 @@ import {
   SelectTrigger,
   SelectValue,
 } from '@/components/ui/select';
+import { Checkbox } from '@/components/ui/checkbox';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import type { TipoConsulta } from '@/types';
 import { formatCPF, formatPhone, removeMask } from '@/utils/formatters';
 import { validateCPF } from '@/utils/cpfValidator';
 import { useCreatePatient } from '@/hooks/useMutatePatient';
+import { useAuth } from '@/hooks/useAuth';
 import { toast } from 'sonner';
 
 const tiposConsulta: TipoConsulta[] = [
@@ -37,7 +39,9 @@ export function NovoPaciente() {
     email: '',
     diagnostico: '',
     tipoConsulta: '',
+    usa_bonus: true,
   });
+  const { role } = useAuth();
 
   const handleChange = (field: string, value: string) => {
     let formattedValue = value;
@@ -83,6 +87,7 @@ export function NovoPaciente() {
       email: formData.email?.trim() || undefined,
       diagnostico: formData.diagnostico?.trim() || undefined,
       tipo_consulta: formData.tipoConsulta || undefined,
+      usa_bonus: formData.usa_bonus,
     });
 
     if (!result.error) {
@@ -204,6 +209,20 @@ export function NovoPaciente() {
                 rows={4}
               />
             </div>
+
+            {/* Bônus de Franquia */}
+            {role === 'admin' && (
+              <div className="flex items-center space-x-2 pt-2 border-t mt-4">
+                <Checkbox
+                  id="usa_bonus"
+                  checked={formData.usa_bonus}
+                  onCheckedChange={(checked) => setFormData(prev => ({ ...prev, usa_bonus: checked as boolean }))}
+                />
+                <Label htmlFor="usa_bonus" className="text-sm font-medium leading-none cursor-pointer">
+                  Utilizar saldo de Bônus de Franquia (R$ 400) para este paciente
+                </Label>
+              </div>
+            )}
 
             {/* Botões */}
             <div className="flex items-center justify-end gap-4 pt-4 border-t">

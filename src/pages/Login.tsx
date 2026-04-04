@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, Link } from 'react-router-dom';
 import { HeartPulse, Eye, EyeOff } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -77,7 +77,12 @@ export function Login() {
             </div>
 
             <div className="space-y-2">
-              <Label htmlFor="senha">Senha</Label>
+              <div className="flex items-center justify-between">
+                <Label htmlFor="senha">Senha</Label>
+                <Link to="/esqueci-senha" className="text-sm font-medium text-emerald-600 hover:text-emerald-700">
+                  Esqueceu a senha?
+                </Link>
+              </div>
               <div className="relative">
                 <Input
                   id="senha"

@@ -1,6 +1,6 @@
 import { useState, useEffect, useCallback } from 'react';
 import { supabase } from '@/lib/supabase';
-import { getPendingActivation } from '@/services/patients';
+import { getPendingActivation, getExpiringPatients } from '@/services/patients';
 import { hasPassedWorkingHours } from '@/utils/workingHoursCalculator';
 import type { Patient, Notificacao } from '@/types';
 
@@ -37,7 +37,21 @@ export function useNotifications() {
       patientId: p.id,
     }));
 
-    setNotifications(notifs);
+    // 2. Busca pacientes perto de vencer (ex: menos de 7 dias)
+    const { data: expiring } = await getExpiringPatients(7);
+    const expiringNotifs: Notificacao[] = (expiring || []).map((p) => {
+      const isExpired = new Date(p.data_expiracao!) < new Date();
+      return {
+        id: `expiring-${p.id}`,
+        titulo: isExpired ? '🛑 Plano Vencido!' : '⚠️ Plano Vencendo',
+        mensagem: `${p.nome} - plano ${isExpired ? 'venceu' : 'vence'} em ${new Date(p.data_expiracao!).toLocaleDateString('pt-BR')}. Solicite renovação.`,
+        data: p.data_expiracao!,
+        lida: false,
+        patientId: p.id,
+      };
+    });
+
+    setNotifications([...notifs, ...expiringNotifs].sort((a, b) => new Date(b.data).getTime() - new Date(a.data).getTime()));
   }, []);
 
   useEffect(() => {

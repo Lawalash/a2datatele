@@ -58,6 +58,7 @@ export interface Patient {
   telepsicologia: boolean;
   presencial: boolean;
   status: StatusPaciente;
+  usa_bonus: boolean;
   data_inicio_cadastro: string;
   data_envio_quality_life: string | null;
   data_hora_ativacao: string | null;
@@ -103,6 +104,7 @@ export interface PatientInsert {
   email?: string;
   diagnostico?: string;
   tipo_consulta?: string;
+  usa_bonus?: boolean;
 }
 
 export interface PatientUpdate {
@@ -124,6 +126,7 @@ export interface PatientUpdate {
   telepsicologia?: boolean;
   presencial?: boolean;
   status?: StatusPaciente;
+  usa_bonus?: boolean;
   valor_plano?: number | null;
   data_envio_quality_life?: string | null;
   data_hora_ativacao?: string | null;

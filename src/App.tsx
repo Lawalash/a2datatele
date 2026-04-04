@@ -6,8 +6,11 @@ import { Login } from '@/pages/Login';
 import { MainLayout } from '@/components/layout/MainLayout';
 import { Dashboard } from '@/pages/Dashboard';
 import { Pacientes } from '@/pages/Pacientes';
+import { Planos } from '@/pages/Planos';
 import { NovoPaciente } from '@/pages/NovoPaciente';
 import { EditarPaciente } from '@/pages/EditarPaciente';
+import { EsqueciSenha } from '@/pages/EsqueciSenha';
+import { RedefinirSenha } from '@/pages/RedefinirSenha';
 import { Configuracoes } from '@/pages/Configuracoes';
 import { Unauthorized } from '@/pages/Unauthorized';
 import { PrivateRoute } from '@/components/PrivateRoute';
@@ -34,6 +37,8 @@ function AppRoutes() {
     <Routes>
       {/* Rota pública */}
       <Route path="/login" element={<Login />} />
+      <Route path="/esqueci-senha" element={<EsqueciSenha />} />
+      <Route path="/redefinir-senha" element={<RedefinirSenha />} />
       <Route path="/unauthorized" element={<Unauthorized />} />
 
       {/* Rotas protegidas com layout */}
@@ -51,7 +56,7 @@ function AppRoutes() {
         <Route
           path="pacientes/novo"
           element={
-            <PrivateRoute requiredRoles={['admin']}>
+            <PrivateRoute requiredRoles={['admin', 'operadora', 'viewer']}>
               <NovoPaciente />
             </PrivateRoute>
           }
@@ -61,6 +66,14 @@ function AppRoutes() {
           element={
             <PrivateRoute requiredRoles={['admin', 'operadora']}>
               <EditarPaciente />
+            </PrivateRoute>
+          }
+        />
+        <Route
+          path="planos"
+          element={
+            <PrivateRoute requiredRoles={['admin']}>
+              <Planos />
             </PrivateRoute>
           }
         />

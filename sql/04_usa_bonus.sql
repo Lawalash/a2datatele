@@ -1,0 +1,1 @@
+ALTER TABLE patients ADD COLUMN usa_bonus BOOLEAN DEFAULT true;

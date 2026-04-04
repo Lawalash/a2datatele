@@ -1,15 +1,20 @@
 import { useState } from 'react';
 import { Link } from 'react-router-dom';
+import jsPDF from 'jspdf';
+import autoTable from 'jspdf-autotable';
 import {
   Search,
   Plus,
   Filter,
   Download,
+  FileText,
   Edit2,
   MoreHorizontal,
   X,
   Loader2,
   CheckCircle,
+  Trash,
+  XCircle,
 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -41,6 +46,7 @@ import { usePatients } from '@/hooks/usePatients';
 import { useAuth } from '@/hooks/useAuth';
 import { exportPlanilhaQualityLife } from '@/services/export';
 import { ActivationModal } from '@/components/ActivationModal';
+import { useCancelPatient, useDeletePatient } from '@/hooks/useMutatePatient';
 import type { StatusPaciente } from '@/types';
 import { STATUS_LABELS, STATUS_CONFIG, STATUS_OPTIONS } from '@/types';
 import { formatCurrency, formatDate, maskCPF } from '@/utils/formatters';
@@ -48,7 +54,10 @@ import { cn } from '@/lib/utils';
 import { toast } from 'sonner';
 
 export function Pacientes() {
-  const { canInsertPatients, canUpdatePatients, canExport } = useAuth();
+  const { canInsertPatients, canUpdatePatients, canExport, isAdmin } = useAuth();
+
+  const cancelMutation = useCancelPatient();
+  const deleteMutation = useDeletePatient();
 
   const [busca, setBusca] = useState('');
   const [filtroStatus, setFiltroStatus] = useState<StatusPaciente | 'todos'>('todos');
@@ -89,25 +98,79 @@ export function Pacientes() {
     }
 
     setExportando(true);
-    const ids = Array.from(selecionados);
+    const ids = selecionados.size > 0 
+      ? Array.from(selecionados) 
+      : pacientesFiltrados.map((p) => p.id);
+
+    if (ids.length === 0) {
+      toast.error('Nenhum paciente para exportar.');
+      setExportando(false);
+      return;
+    }
+    
     const { error } = await exportPlanilhaQualityLife(ids);
     setExportando(false);
 
     if (error) {
       toast.error(error);
     } else {
-      toast.success('Planilha exportada com sucesso!');
+      toast.success('Planilha Exportada! Abrindo WhatsApp...');
       setSelecionados(new Set());
+      
+      const msg = encodeURIComponent("Olá Quality Life, seguem em anexo as novas vidas a serem ativadas na telemedicina.");
+      setTimeout(() => {
+        window.open(`https://wa.me/5511966713984?text=${msg}`, '_blank');
+      }, 1000);
     }
+  };
+
+  const handleExportarPDF = () => {
+    const pacientesExport = selecionados.size > 0 
+      ? pacientesFiltrados.filter(p => selecionados.has(p.id))
+      : pacientesFiltrados;
+
+    if (pacientesExport.length === 0) {
+      toast.error('Nenhum paciente para exportar.');
+      return;
+    }
+    
+    const doc = new jsPDF('landscape');
+    
+    doc.setFontSize(16);
+    doc.text('Relatório de Pacientes - Quality Life', 14, 15);
+    doc.setFontSize(10);
+    doc.text(`Gerado em: ${new Date().toLocaleDateString('pt-BR')}`, 14, 22);
+
+    const tableColumn = ["Nome", "CPF", "Status", "Plano", "Data de Cadastro", "Valor"];
+    const tableRows = pacientesExport.map(p => [
+      p.nome,
+      maskCPF(p.cpf),
+      STATUS_LABELS[p.status],
+      p.plano || '-',
+      formatDate(p.data_inicio_cadastro),
+      p.valor_plano ? formatCurrency(p.valor_plano) : '-'
+    ]);
+
+    autoTable(doc, {
+      head: [tableColumn],
+      body: tableRows,
+      startY: 28,
+      theme: 'grid',
+      styles: { fontSize: 8, font: 'helvetica' },
+      headStyles: { fillColor: [5, 150, 105] }, // emerald-600
+    });
+
+    doc.save(`pacientes_qualitylife_${new Date().toISOString().split('T')[0]}.pdf`);
+    toast.success('Relatório em PDF gerado com sucesso!');
   };
 
   const limparSelecao = () => {
     setSelecionados(new Set());
   };
 
-  // Pacientes selecionados que estão pendentes de ativação
-  const selectedPendentes = pacientesFiltrados.filter(
-    (p) => selecionados.has(p.id) && p.status === 'pendente_ativacao'
+  // Pacientes selecionados que não estão ativos
+  const selectedNotActive = pacientesFiltrados.filter(
+    (p) => selecionados.has(p.id) && p.status !== 'ativo'
   );
 
   return (
@@ -118,14 +181,42 @@ export function Pacientes() {
           <h1 className="text-2xl font-bold text-slate-900">Pacientes</h1>
           <p className="text-slate-500">Gerencie os pacientes da franquia</p>
         </div>
-        {canInsertPatients && (
-          <Link to="/pacientes/novo">
-            <Button className="bg-emerald-600 hover:bg-emerald-700">
-              <Plus className="w-4 h-4 mr-2" />
-              Novo Paciente
+        <div className="flex items-center gap-2">
+          {canExport && (
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={handleExportar}
+              disabled={exportando}
+              className="border-emerald-300 text-emerald-700 hover:bg-emerald-100 h-10"
+            >
+              {exportando ? (
+                <Loader2 className="w-4 h-4 mr-2 animate-spin" />
+              ) : (
+                <Download className="w-4 h-4 mr-2" />
+              )}
+              CSV
             </Button>
-          </Link>
-        )}
+          )}
+          <Button
+            variant="outline"
+            size="sm"
+            onClick={handleExportarPDF}
+            className="border-emerald-300 text-emerald-700 hover:bg-emerald-100 h-10"
+          >
+            <FileText className="w-4 h-4 mr-2" />
+            PDF
+          </Button>
+
+          {canInsertPatients && (
+            <Link to="/pacientes/novo">
+              <Button className="bg-emerald-600 hover:bg-emerald-700 h-10">
+                <Plus className="w-4 h-4 mr-2" />
+                Novo Paciente
+              </Button>
+            </Link>
+          )}
+        </div>
       </div>
 
       {/* Barra de seleção */}
@@ -147,7 +238,7 @@ export function Pacientes() {
               </Button>
             </div>
             <div className="flex items-center gap-2">
-              {selectedPendentes.length > 0 && canUpdatePatients && (
+              {selectedNotActive.length > 0 && canUpdatePatients && (
                 <Button
                   variant="outline"
                   size="sm"
@@ -155,23 +246,7 @@ export function Pacientes() {
                   className="border-emerald-500 text-emerald-700 hover:bg-emerald-100"
                 >
                   <CheckCircle className="w-4 h-4 mr-2" />
-                  Confirmar Ativação ({selectedPendentes.length})
-                </Button>
-              )}
-              {canExport && (
-                <Button
-                  variant="outline"
-                  size="sm"
-                  onClick={handleExportar}
-                  disabled={exportando}
-                  className="border-emerald-300 text-emerald-700 hover:bg-emerald-100"
-                >
-                  {exportando ? (
-                    <Loader2 className="w-4 h-4 mr-2 animate-spin" />
-                  ) : (
-                    <Download className="w-4 h-4 mr-2" />
-                  )}
-                  Exportar Planilha
+                  Confirmar Ativação ({selectedNotActive.length})
                 </Button>
               )}
             </div>
@@ -288,6 +363,11 @@ export function Pacientes() {
                         </TableCell>
                         <TableCell className="text-slate-600">
                           {paciente.plano || '-'}
+                          {paciente.usa_bonus !== false && (
+                            <Badge variant="outline" className="ml-2 border-emerald-300 text-emerald-700 bg-emerald-50 text-[10px]">
+                              Bônus
+                            </Badge>
+                          )}
                         </TableCell>
                         <TableCell className="text-slate-600">
                           {paciente.valor_plano
@@ -295,7 +375,14 @@ export function Pacientes() {
                             : '-'}
                         </TableCell>
                         <TableCell className="text-slate-600">
-                          {formatDate(paciente.data_inicio_cadastro)}
+                          <div>
+                            {formatDate(paciente.data_inicio_cadastro)}
+                          </div>
+                          {paciente.status === 'ativo' && paciente.data_expiracao && (
+                            <div className="text-xs text-amber-600 font-medium mt-1">
+                              Vence: {formatDate(paciente.data_expiracao)}
+                            </div>
+                          )}
                         </TableCell>
                         <TableCell>
                           {canUpdatePatients && (
@@ -312,6 +399,43 @@ export function Pacientes() {
                                     Editar
                                   </DropdownMenuItem>
                                 </Link>
+                                {paciente.status !== 'ativo' && paciente.status !== 'cancelado' && (
+                                  <DropdownMenuItem
+                                    onClick={() => {
+                                      setActivationModalOpen(true);
+                                      setSelecionados(new Set([paciente.id]));
+                                    }}
+                                  >
+                                    <CheckCircle className="w-4 h-4 mr-2 text-emerald-600" />
+                                    Ativar Paciente
+                                  </DropdownMenuItem>
+                                )}
+                                {paciente.status === 'ativo' && (
+                                  <DropdownMenuItem
+                                    onClick={() => {
+                                      if (confirm('Deseja realmente cancelar o plano deste paciente? Ele ficará CANCELADO.')) {
+                                        cancelMutation.mutateAsync(paciente.id);
+                                      }
+                                    }}
+                                    className="text-amber-600 focus:text-amber-600"
+                                  >
+                                    <XCircle className="w-4 h-4 mr-2" />
+                                    Cancelar Plano
+                                  </DropdownMenuItem>
+                                )}
+                                {isAdmin && (
+                                  <DropdownMenuItem
+                                    onClick={() => {
+                                      if (confirm('Deseja EXCLUIR DEFINITIVAMENTE este usuário? Esta ação não tem volta.')) {
+                                        deleteMutation.mutateAsync(paciente.id);
+                                      }
+                                    }}
+                                    className="text-red-600 focus:text-red-600 focus:bg-red-50"
+                                  >
+                                    <Trash className="w-4 h-4 mr-2" />
+                                    Excluir Usuário
+                                  </DropdownMenuItem>
+                                )}
                               </DropdownMenuContent>
                             </DropdownMenu>
                           )}
@@ -338,7 +462,7 @@ export function Pacientes() {
           setActivationModalOpen(false);
           setSelecionados(new Set());
         }}
-        patients={selectedPendentes}
+        patients={selectedNotActive.length > 0 ? selectedNotActive : pacientesFiltrados.filter(p => selecionados.has(p.id))}
       />
     </div>
   );

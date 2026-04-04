@@ -67,6 +67,7 @@ export function EditarPaciente() {
     funeral: false,
     telepsicologia: false,
     presencial: false,
+    usa_bonus: true,
   });
 
   const [valorPlano, setValorPlano] = useState(0);
@@ -90,6 +91,7 @@ export function EditarPaciente() {
         funeral: paciente.funeral || false,
         telepsicologia: paciente.telepsicologia || false,
         presencial: paciente.presencial || false,
+        usa_bonus: paciente.usa_bonus !== false,
       });
       setValorPlano(paciente.valor_plano || 0);
     }
@@ -201,6 +203,7 @@ export function EditarPaciente() {
         telepsicologia: formData.telepsicologia,
         presencial: formData.presencial,
         valor_plano: valorPlano || null,
+        usa_bonus: formData.usa_bonus,
         status: newStatus,
       },
     });
@@ -520,6 +523,20 @@ export function EditarPaciente() {
                   </label>
                 </div>
               </div>
+
+              {/* Bônus de Franquia */}
+              {isAdmin && (
+                <div className="flex items-center space-x-2 pt-4 border-t mt-6">
+                  <Checkbox
+                    id="usa_bonus_editar"
+                    checked={formData.usa_bonus}
+                    onCheckedChange={(checked) => setFormData(prev => ({ ...prev, usa_bonus: checked as boolean }))}
+                  />
+                  <Label htmlFor="usa_bonus_editar" className="text-sm font-medium leading-none cursor-pointer text-amber-700">
+                    Paciente utiliza saldo de Bônus de Franquia (R$ 400)?
+                  </Label>
+                </div>
+              )}
             </CardContent>
           </Card>
 

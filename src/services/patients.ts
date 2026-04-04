@@ -126,6 +126,29 @@ export async function updatePatient(id: string, updates: PatientUpdate) {
   }
 }
 
+export async function deletePatient(id: string) {
+  try {
+    const { error } = await supabase.from('patients').delete().eq('id', id);
+    if (error) return { error: error.message };
+    return { error: null };
+  } catch {
+    return { error: 'Erro ao excluir paciente.' };
+  }
+}
+
+export async function cancelPatient(id: string) {
+  try {
+    const { error } = await supabase
+      .from('patients')
+      .update({ status: 'cancelado' })
+      .eq('id', id);
+    if (error) return { error: error.message };
+    return { error: null };
+  } catch {
+    return { error: 'Erro ao cancelar paciente.' };
+  }
+}
+
 // ============================================================
 // DASHBOARD METRICS
 // ============================================================
@@ -147,7 +170,7 @@ export async function getDashboardMetrics() {
     );
 
     const custoPlanosAtivos = ativos.reduce(
-      (total, p) => total + (p.valor_plano || 0),
+      (total, p) => total + (p.usa_bonus !== false ? (p.valor_plano || 0) : 0),
       0
     );
 
@@ -157,7 +180,7 @@ export async function getDashboardMetrics() {
           p.status
         )
       )
-      .reduce((total, p) => total + (p.valor_plano || 29.9), 0);
+      .reduce((total, p) => total + (p.usa_bonus !== false ? (p.valor_plano || 29.9) : 0), 0);
 
     // Pacientes com plano vencendo nos próximos 7 dias
     const hoje = new Date();
@@ -168,6 +191,22 @@ export async function getDashboardMetrics() {
       return vencimento <= limite && vencimento >= hoje;
     });
 
+    const ultimosMeses = Array.from({ length: 6 }).map((_, i) => {
+      const d = new Date();
+      d.setMonth(d.getMonth() - i);
+      
+      const filtered = ativos.filter(p => {
+        const pd = new Date(p.data_inicio_cadastro);
+        return pd <= new Date(d.getFullYear(), d.getMonth() + 1, 0);
+      });
+
+      return {
+        mes: new Intl.DateTimeFormat('pt-BR', { month: 'short' }).format(d),
+        vidas: filtered.length,
+        custo: filtered.reduce((acc, p) => acc + (p.valor_plano || 0), 0)
+      };
+    }).reverse();
+
     return {
       data: {
         vidasAtivas: ativos.length,
@@ -176,6 +215,7 @@ export async function getDashboardMetrics() {
         saldoBonus: BONUS_MENSAL - custoPlanosAtivos,
         custoProjetado,
         pacientesVencendo: vencendo,
+        historico: ultimosMeses,
       },
       error: null,
     };
@@ -260,18 +300,37 @@ export async function activatePatients(ids: string[]) {
 // PRICING PLANS
 // ============================================================
 
-export async function getPricingPlans() {
+export async function getPricingPlans(includeInactive = false) {
   try {
-    const { data, error } = await supabase
-      .from('pricing_plans')
-      .select('*')
-      .eq('ativo', true)
-      .order('nome');
-
+    let query = supabase.from('pricing_plans').select('*').order('nome');
+    if (!includeInactive) {
+      query = query.eq('ativo', true);
+    }
+    const { data, error } = await query;
     if (error) return { data: null, error: error.message };
     return { data, error: null };
   } catch {
     return { data: null, error: 'Erro ao buscar planos.' };
+  }
+}
+
+export async function createPricingPlan(plan: { nome: string; forma_pagamento: string; valor: number }) {
+  try {
+    const { data, error } = await supabase.from('pricing_plans').insert(plan).select().single();
+    if (error) return { data: null, error: error.message };
+    return { data, error: null };
+  } catch {
+    return { data: null, error: 'Erro ao criar plano.' };
+  }
+}
+
+export async function updatePricingPlan(id: string, updates: { nome?: string; forma_pagamento?: string; valor?: number; ativo?: boolean }) {
+  try {
+    const { data, error } = await supabase.from('pricing_plans').update(updates).eq('id', id).select().single();
+    if (error) return { data: null, error: error.message };
+    return { data, error: null };
+  } catch {
+    return { data: null, error: 'Erro ao atualizar plano.' };
   }
 }
 

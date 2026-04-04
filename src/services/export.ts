@@ -71,7 +71,7 @@ export async function exportPlanilhaQualityLife(patientIds: string[]) {
 
     // 4. Baixar o arquivo
     const today = new Date().toISOString().split('T')[0];
-    XLSX.writeFile(workbook, `quality_life_${today}.xlsx`);
+    XLSX.writeFile(workbook, `quality_life_${today}.csv`, { bookType: 'csv' });
 
     // 5. Atualizar pacientes: status e data_envio_quality_life
     const now = new Date().toISOString();

@@ -7,10 +7,10 @@ export function MainLayout() {
     <div className="min-h-screen bg-slate-50">
       <Sidebar />
 
-      <div className="ml-64">
+      <div className="lg:ml-64">
         <Header />
 
-        <main className="p-6">
+        <main className="p-4 lg:p-6">
           <Outlet />
         </main>
       </div>
