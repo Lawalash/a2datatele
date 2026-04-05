@@ -19,8 +19,13 @@ export function Login() {
   const [mfaCode, setMfaCode] = useState('');
 
   // Se já está autenticado (e não precisa de MFA), redireciona
+  useEffect(() => {
+    if (isAuthenticated) {
+      navigate('/dashboard', { replace: true });
+    }
+  }, [isAuthenticated, navigate]);
+
   if (isAuthenticated) {
-    navigate('/dashboard', { replace: true });
     return null;
   }
 
