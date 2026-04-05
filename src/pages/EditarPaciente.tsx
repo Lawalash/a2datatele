@@ -112,7 +112,7 @@ export function EditarPaciente() {
   if (isLoading) {
     return (
       <div className="flex items-center justify-center py-20">
-        <Loader2 className="w-8 h-8 text-emerald-600 animate-spin" />
+        <Loader2 className="w-8 h-8 text-[#4e7fa6] animate-spin" />
         <span className="ml-3 text-slate-500">Carregando paciente...</span>
       </div>
     );
@@ -286,7 +286,7 @@ export function EditarPaciente() {
           <Card>
             <CardHeader>
               <CardTitle className="flex items-center gap-2">
-                <Calendar className="w-5 h-5 text-emerald-600" />
+                <Calendar className="w-5 h-5 text-[#4e7fa6]" />
                 Dados Pessoais
               </CardTitle>
             </CardHeader>
@@ -338,7 +338,7 @@ export function EditarPaciente() {
           <Card>
             <CardHeader>
               <CardTitle className="flex items-center gap-2">
-                <MapPin className="w-5 h-5 text-emerald-600" />
+                <MapPin className="w-5 h-5 text-[#4e7fa6]" />
                 Endereço
               </CardTitle>
             </CardHeader>
@@ -433,7 +433,7 @@ export function EditarPaciente() {
           <Card>
             <CardHeader>
               <CardTitle className="flex items-center gap-2">
-                <CreditCard className="w-5 h-5 text-emerald-600" />
+                <CreditCard className="w-5 h-5 text-[#4e7fa6]" />
                 Plano
               </CardTitle>
             </CardHeader>
@@ -478,12 +478,12 @@ export function EditarPaciente() {
               </div>
 
               {valorPlano > 0 && (
-                <div className="bg-emerald-50 border border-emerald-200 rounded-lg p-4">
-                  <p className="text-sm text-emerald-700">Valor do Plano</p>
-                  <p className="text-2xl font-bold text-emerald-800">
+                <div className="bg-[#7aadc8]/10 border border-[#7aadc8]/30 rounded-lg p-4">
+                  <p className="text-sm text-[#4e7fa6]">Valor do Plano</p>
+                  <p className="text-2xl font-bold text-[#0d2f52]">
                     {formatCurrency(valorPlano)}
                   </p>
-                  <p className="text-xs text-emerald-600 mt-1">
+                  <p className="text-xs text-[#4e7fa6] mt-1">
                     {formData.tipoPlano} • {formData.formaPagamento}
                   </p>
                 </div>
@@ -551,7 +551,7 @@ export function EditarPaciente() {
             </Button>
             <Button
               type="submit"
-              className="bg-emerald-600 hover:bg-emerald-700"
+              className="bg-gradient-to-r from-[#0d2f52] to-[#4e7fa6] hover:from-[#0a2440] hover:to-[#3d6e95]"
               disabled={updateMutation.isPending}
             >
               {updateMutation.isPending ? (

@@ -180,7 +180,7 @@ export const STATUS_CONFIG: Record<StatusPaciente, { cor: string; bg: string }> 
   incompleto: { cor: 'text-red-700', bg: 'bg-red-100' },
   completo: { cor: 'text-blue-700', bg: 'bg-blue-100' },
   pendente_ativacao: { cor: 'text-orange-700', bg: 'bg-orange-100' },
-  ativo: { cor: 'text-emerald-700', bg: 'bg-emerald-100' },
+  ativo: { cor: 'text-[#0d2f52]', bg: 'bg-[#7aadc8]/20' },
   vencido: { cor: 'text-slate-700', bg: 'bg-slate-100' },
   cancelado: { cor: 'text-slate-100', bg: 'bg-slate-700' },
 };

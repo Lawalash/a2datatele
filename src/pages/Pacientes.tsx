@@ -54,7 +54,7 @@ import { cn } from '@/lib/utils';
 import { toast } from 'sonner';
 
 export function Pacientes() {
-  const { canInsertPatients, canUpdatePatients, canExport, isAdmin } = useAuth();
+  const { canInsertPatients, canUpdatePatients, canExport } = useAuth();
 
   const cancelMutation = useCancelPatient();
   const deleteMutation = useDeletePatient();
@@ -114,13 +114,8 @@ export function Pacientes() {
     if (error) {
       toast.error(error);
     } else {
-      toast.success('Planilha Exportada! Abrindo WhatsApp...');
+      toast.success('Planilha Exportada com sucesso!');
       setSelecionados(new Set());
-      
-      const msg = encodeURIComponent("Olá Quality Life, seguem em anexo as novas vidas a serem ativadas na telemedicina.");
-      setTimeout(() => {
-        window.open(`https://wa.me/5511966713984?text=${msg}`, '_blank');
-      }, 1000);
     }
   };
 
@@ -157,7 +152,7 @@ export function Pacientes() {
       startY: 28,
       theme: 'grid',
       styles: { fontSize: 8, font: 'helvetica' },
-      headStyles: { fillColor: [5, 150, 105] }, // emerald-600
+      headStyles: { fillColor: [13, 47, 82] }, // a2-navy #0d2f52
     });
 
     doc.save(`pacientes_qualitylife_${new Date().toISOString().split('T')[0]}.pdf`);
@@ -178,8 +173,8 @@ export function Pacientes() {
       {/* Header */}
       <div className="flex items-center justify-between">
         <div>
-          <h1 className="text-2xl font-bold text-slate-900">Pacientes</h1>
-          <p className="text-slate-500">Gerencie os pacientes da franquia</p>
+          <h1 className="text-2xl font-bold text-[#0d2f52] tracking-tight">Pacientes</h1>
+          <p className="text-[#4e7fa6] text-sm">Gerencie os pacientes da franquia</p>
         </div>
         <div className="flex items-center gap-2">
           {canExport && (
@@ -188,7 +183,7 @@ export function Pacientes() {
               size="sm"
               onClick={handleExportar}
               disabled={exportando}
-              className="border-emerald-300 text-emerald-700 hover:bg-emerald-100 h-10"
+              className="border-[#7aadc8]/40 text-[#0d2f52] hover:bg-[#7aadc8]/10 h-10"
             >
               {exportando ? (
                 <Loader2 className="w-4 h-4 mr-2 animate-spin" />
@@ -202,7 +197,7 @@ export function Pacientes() {
             variant="outline"
             size="sm"
             onClick={handleExportarPDF}
-            className="border-emerald-300 text-emerald-700 hover:bg-emerald-100 h-10"
+            className="border-[#7aadc8]/40 text-[#0d2f52] hover:bg-[#7aadc8]/10 h-10"
           >
             <FileText className="w-4 h-4 mr-2" />
             PDF
@@ -210,7 +205,7 @@ export function Pacientes() {
 
           {canInsertPatients && (
             <Link to="/pacientes/novo">
-              <Button className="bg-emerald-600 hover:bg-emerald-700 h-10">
+              <Button className="bg-gradient-to-r from-[#0d2f52] to-[#4e7fa6] hover:from-[#0a2440] hover:to-[#3d6e95] h-10 shadow-md shadow-[#0d2f52]/15">
                 <Plus className="w-4 h-4 mr-2" />
                 Novo Paciente
               </Button>
@@ -221,17 +216,17 @@ export function Pacientes() {
 
       {/* Barra de seleção */}
       {selecionados.size > 0 && (
-        <Card className="bg-emerald-50 border-emerald-200">
+        <Card className="bg-[#7aadc8]/10 border-[#7aadc8]/30">
           <CardContent className="py-3 flex items-center justify-between">
             <div className="flex items-center gap-3">
-              <span className="font-medium text-emerald-900">
+              <span className="font-medium text-[#0d2f52]">
                 {selecionados.size} paciente(s) selecionado(s)
               </span>
               <Button
                 variant="ghost"
                 size="sm"
                 onClick={limparSelecao}
-                className="text-emerald-700 hover:text-emerald-900 hover:bg-emerald-100"
+                className="text-[#4e7fa6] hover:text-[#0d2f52] hover:bg-[#7aadc8]/15"
               >
                 <X className="w-4 h-4 mr-1" />
                 Limpar
@@ -243,7 +238,7 @@ export function Pacientes() {
                   variant="outline"
                   size="sm"
                   onClick={() => setActivationModalOpen(true)}
-                  className="border-emerald-500 text-emerald-700 hover:bg-emerald-100"
+                  className="border-[#4e7fa6] text-[#0d2f52] hover:bg-[#7aadc8]/15"
                 >
                   <CheckCircle className="w-4 h-4 mr-2" />
                   Confirmar Ativação ({selectedNotActive.length})
@@ -291,7 +286,7 @@ export function Pacientes() {
         <CardContent className="p-0">
           {isLoading ? (
             <div className="flex items-center justify-center py-20">
-              <Loader2 className="w-6 h-6 text-emerald-600 animate-spin" />
+              <Loader2 className="w-6 h-6 text-[#4e7fa6] animate-spin" />
               <span className="ml-3 text-slate-500">Carregando pacientes...</span>
             </div>
           ) : error ? (
@@ -336,7 +331,7 @@ export function Pacientes() {
                       <TableRow
                         key={paciente.id}
                         className={cn(
-                          selecionados.has(paciente.id) && 'bg-emerald-50'
+                          selecionados.has(paciente.id) && 'bg-[#7aadc8]/5'
                         )}
                       >
                         <TableCell>
@@ -364,7 +359,7 @@ export function Pacientes() {
                         <TableCell className="text-slate-600">
                           {paciente.plano || '-'}
                           {paciente.usa_bonus !== false && (
-                            <Badge variant="outline" className="ml-2 border-emerald-300 text-emerald-700 bg-emerald-50 text-[10px]">
+                            <Badge variant="outline" className="ml-2 border-[#7aadc8]/40 text-[#0d2f52] bg-[#7aadc8]/10 text-[10px]">
                               Bônus
                             </Badge>
                           )}
@@ -401,39 +396,42 @@ export function Pacientes() {
                                 </Link>
                                 {paciente.status !== 'ativo' && paciente.status !== 'cancelado' && (
                                   <DropdownMenuItem
-                                    onClick={() => {
+                                    onSelect={(e) => {
+                                      e.preventDefault();
                                       setActivationModalOpen(true);
                                       setSelecionados(new Set([paciente.id]));
                                     }}
                                   >
-                                    <CheckCircle className="w-4 h-4 mr-2 text-emerald-600" />
+                                    <CheckCircle className="w-4 h-4 mr-2 text-[#4e7fa6]" />
                                     Ativar Paciente
                                   </DropdownMenuItem>
                                 )}
                                 {paciente.status === 'ativo' && (
                                   <DropdownMenuItem
-                                    onClick={() => {
-                                      if (confirm('Deseja realmente cancelar o plano deste paciente? Ele ficará CANCELADO.')) {
+                                    onSelect={(e) => {
+                                      e.preventDefault();
+                                      if (window.confirm('Deseja realmente cancelar o plano deste paciente? Ele ficará CANCELADO.')) {
                                         cancelMutation.mutateAsync(paciente.id);
                                       }
                                     }}
-                                    className="text-amber-600 focus:text-amber-600"
+                                    className="text-amber-600 focus:text-amber-600 focus:bg-amber-50 cursor-pointer"
                                   >
                                     <XCircle className="w-4 h-4 mr-2" />
                                     Cancelar Plano
                                   </DropdownMenuItem>
                                 )}
-                                {isAdmin && (
+                                {canUpdatePatients && (
                                   <DropdownMenuItem
-                                    onClick={() => {
-                                      if (confirm('Deseja EXCLUIR DEFINITIVAMENTE este usuário? Esta ação não tem volta.')) {
+                                    onSelect={(e) => {
+                                      e.preventDefault();
+                                      if (window.confirm('Deseja EXCLUIR DEFINITIVAMENTE este paciente? Esta ação não tem volta.')) {
                                         deleteMutation.mutateAsync(paciente.id);
                                       }
                                     }}
-                                    className="text-red-600 focus:text-red-600 focus:bg-red-50"
+                                    className="text-red-600 focus:text-red-600 focus:bg-red-50 cursor-pointer"
                                   >
                                     <Trash className="w-4 h-4 mr-2" />
-                                    Excluir Usuário
+                                    Excluir
                                   </DropdownMenuItem>
                                 )}
                               </DropdownMenuContent>

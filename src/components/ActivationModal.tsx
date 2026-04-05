@@ -61,7 +61,7 @@ export function ActivationModal({
           <>
             <DialogHeader>
               <DialogTitle className="flex items-center gap-2">
-                <Check className="w-5 h-5 text-emerald-600" />
+                <Check className="w-5 h-5 text-[#4e7fa6]" />
                 Confirmar Ativação
               </DialogTitle>
               <DialogDescription>
@@ -73,19 +73,19 @@ export function ActivationModal({
             <div className="space-y-3 py-4">
               <ul className="space-y-2 text-sm text-slate-600">
                 <li className="flex items-start gap-2">
-                  <span className="text-emerald-500 mt-0.5">✓</span>
+                  <span className="text-[#7aadc8] mt-0.5">✓</span>
                   Registrar a data/hora de ativação
                 </li>
                 <li className="flex items-start gap-2">
-                  <span className="text-emerald-500 mt-0.5">✓</span>
+                  <span className="text-[#7aadc8] mt-0.5">✓</span>
                   Definir expiração para 30 dias após ativação
                 </li>
                 <li className="flex items-start gap-2">
-                  <span className="text-emerald-500 mt-0.5">✓</span>
+                  <span className="text-[#7aadc8] mt-0.5">✓</span>
                   Alterar status para &quot;ATIVO&quot;
                 </li>
                 <li className="flex items-start gap-2">
-                  <span className="text-emerald-500 mt-0.5">✓</span>
+                  <span className="text-[#7aadc8] mt-0.5">✓</span>
                   Registrar no log de auditoria
                 </li>
               </ul>
@@ -108,7 +108,7 @@ export function ActivationModal({
                 Cancelar
               </Button>
               <Button
-                className="bg-emerald-600 hover:bg-emerald-700"
+                className="bg-gradient-to-r from-[#0d2f52] to-[#4e7fa6] hover:from-[#0a2440] hover:to-[#3d6e95]"
                 onClick={handleActivate}
                 disabled={activateMutation.isPending}
               >
@@ -119,7 +119,7 @@ export function ActivationModal({
         ) : (
           <>
             <DialogHeader>
-              <DialogTitle className="flex items-center gap-2 text-emerald-600">
+              <DialogTitle className="flex items-center gap-2 text-[#4e7fa6]">
                 <Check className="w-5 h-5" />
                 Ativação Concluída!
               </DialogTitle>

@@ -52,7 +52,7 @@ export function RedefinirSenha() {
     <div className="min-h-screen bg-slate-50 flex flex-col justify-center py-12 sm:px-6 lg:px-8">
       <div className="sm:mx-auto sm:w-full sm:max-w-md">
         <div className="flex justify-center">
-          <div className="w-16 h-16 bg-emerald-500 rounded-xl flex items-center justify-center shadow-lg">
+          <div className="w-16 h-16 bg-gradient-to-br from-[#4e7fa6] to-[#7aadc8] rounded-xl flex items-center justify-center shadow-lg">
             <HeartPulse className="w-8 h-8 text-white" />
           </div>
         </div>
@@ -85,7 +85,7 @@ export function RedefinirSenha() {
             <div>
               <Button
                 type="submit"
-                className="w-full bg-emerald-600 hover:bg-emerald-700 flex justify-center"
+                className="w-full bg-gradient-to-r from-[#0d2f52] to-[#4e7fa6] hover:from-[#0a2440] hover:to-[#3d6e95] flex justify-center"
                 disabled={carregando}
               >
                 {carregando ? (

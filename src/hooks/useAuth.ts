@@ -11,13 +11,15 @@ export function useAuth() {
   const loading = useAuthStore((s) => s.loading);
   const initialized = useAuthStore((s) => s.initialized);
   const login = useAuthStore((s) => s.login);
+  const verifyMfa = useAuthStore((s) => s.verifyMfa);
   const logout = useAuthStore((s) => s.logout);
   const loadSession = useAuthStore((s) => s.loadSession);
+  const mfaRequired = useAuthStore((s) => s.mfaRequired);
 
   const isAdmin = role === 'admin';
   const isOperadora = role === 'operadora';
   const isViewer = role === 'viewer';
-  const isAuthenticated = !!user;
+  const isAuthenticated = !!user && !mfaRequired;
 
   const nome = profile?.nome || user?.email?.split('@')[0] || 'Usuário';
 
@@ -34,8 +36,10 @@ export function useAuth() {
     loading,
     initialized,
     login,
+    verifyMfa,
     logout,
     loadSession,
+    mfaRequired,
     isAdmin,
     isOperadora,
     isViewer,

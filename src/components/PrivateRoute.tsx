@@ -21,7 +21,7 @@ export function PrivateRoute({ children, requiredRoles }: PrivateRouteProps) {
     return (
       <div className="min-h-screen flex items-center justify-center bg-slate-50">
         <div className="flex flex-col items-center gap-3">
-          <Spinner className="w-8 h-8 text-emerald-600" />
+          <Spinner className="w-8 h-8 text-[#4e7fa6]" />
           <p className="text-slate-500 text-sm">Verificando autenticação...</p>
         </div>
       </div>

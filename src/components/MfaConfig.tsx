@@ -31,8 +31,11 @@ export function MfaConfig() {
 
   const handleEnroll = async () => {
     setIsEnrolling(true);
+    const { data: { user } } = await supabase.auth.getUser();
     const { data, error } = await supabase.auth.mfa.enroll({
       factorType: 'totp',
+      issuer: 'A2 DATA Telemedicina',
+      friendlyName: user?.email || 'Usuário',
     });
     
     setIsEnrolling(false);
@@ -68,12 +71,16 @@ export function MfaConfig() {
     }
   };
 
-  const handleUnenroll = async (id: string) => {
+  const handleUnenroll = async (id?: string) => {
+    if (!id) {
+      toast.error('Nenhum fator 2FA encontrado para desativar.');
+      return;
+    }
     const { error } = await supabase.auth.mfa.unenroll({
       factorId: id
     });
     if (error) {
-      toast.error('Erro ao desativar 2FA');
+      toast.error('Erro ao desativar 2FA: ' + error.message);
     } else {
       toast.success('2FA desativada com sucesso');
       fetchMfaStatus();
@@ -87,12 +94,12 @@ export function MfaConfig() {
       {isLoading && factors.length === 0 ? (
         <Loader2 className="w-5 h-5 animate-spin" />
       ) : isMfaEnabled ? (
-        <div className="p-4 bg-emerald-50 border border-emerald-200 rounded-lg flex items-center justify-between">
+        <div className="p-4 bg-[#7aadc8]/10 border border-[#7aadc8]/30 rounded-lg flex items-center justify-between">
           <div className="flex items-center gap-3">
-            <ShieldCheck className="w-6 h-6 text-emerald-600" />
+            <ShieldCheck className="w-6 h-6 text-[#4e7fa6]" />
             <div>
-              <p className="font-medium text-emerald-900">2FA Habilitada</p>
-              <p className="text-sm text-emerald-700">Sua conta está protegida por Autenticação de Dois Fatores.</p>
+              <p className="font-medium text-[#0d2f52]">2FA Habilitada</p>
+              <p className="text-sm text-[#4e7fa6]">Sua conta está protegida por Autenticação de Dois Fatores.</p>
             </div>
           </div>
           <Button 
@@ -122,7 +129,7 @@ export function MfaConfig() {
 
           <div className="flex gap-2">
             <Button type="button" variant="outline" onClick={() => setQrCodeData(null)}>Cancelar</Button>
-            <Button type="submit" className="bg-emerald-600" disabled={isLoading}>
+            <Button type="submit" className="bg-[#0d2f52]" disabled={isLoading}>
               {isLoading ? <Loader2 className="w-4 h-4 mr-2 animate-spin" /> : null}
               Verificar
             </Button>
@@ -137,7 +144,7 @@ export function MfaConfig() {
               <p className="text-sm text-slate-500">Adicione uma camada extra de segurança usando um aplicativo Authenticator.</p>
             </div>
           </div>
-          <Button onClick={handleEnroll} disabled={isEnrolling} className="bg-emerald-600 hover:bg-emerald-700">
+          <Button onClick={handleEnroll} disabled={isEnrolling} className="bg-gradient-to-r from-[#0d2f52] to-[#4e7fa6] hover:from-[#0a2440] hover:to-[#3d6e95]">
             {isEnrolling ? <Loader2 className="w-4 h-4 mr-2 animate-spin" /> : 'Habilitar 2FA'}
           </Button>
         </div>

@@ -34,7 +34,7 @@ export function EsqueciSenha() {
     <div className="min-h-screen bg-slate-50 flex flex-col justify-center py-12 sm:px-6 lg:px-8">
       <div className="sm:mx-auto sm:w-full sm:max-w-md">
         <div className="flex justify-center">
-          <div className="w-16 h-16 bg-emerald-500 rounded-xl flex items-center justify-center shadow-lg">
+          <div className="w-16 h-16 bg-gradient-to-br from-[#4e7fa6] to-[#7aadc8] rounded-xl flex items-center justify-center shadow-lg">
             <HeartPulse className="w-8 h-8 text-white" />
           </div>
         </div>
@@ -43,7 +43,7 @@ export function EsqueciSenha() {
         </h2>
         <p className="mt-2 text-center text-sm text-slate-600">
           Lembrou a senha?{' '}
-          <Link to="/login" className="font-medium text-emerald-600 hover:text-emerald-500">
+          <Link to="/login" className="font-medium text-[#4e7fa6] hover:text-[#0d2f52]">
             Fazer login
           </Link>
         </p>
@@ -53,13 +53,13 @@ export function EsqueciSenha() {
         <Card className="py-8 px-4 shadow sm:rounded-lg sm:px-10">
           {sucesso ? (
             <div className="text-center space-y-4">
-              <CheckCircle2 className="mx-auto h-12 w-12 text-emerald-500" />
+              <CheckCircle2 className="mx-auto h-12 w-12 text-[#7aadc8]" />
               <h3 className="text-lg font-medium text-slate-900">E-mail enviado!</h3>
               <p className="text-sm text-slate-500">
                 Verifique sua caixa de entrada (e pasta de spam) para receber o link de redefinição de senha.
               </p>
               <Link to="/login" className="block mt-4">
-                <Button className="w-full bg-emerald-600 hover:bg-emerald-700">
+                <Button className="w-full bg-gradient-to-r from-[#0d2f52] to-[#4e7fa6] hover:from-[#0a2440] hover:to-[#3d6e95]">
                   Voltar para o Login
                 </Button>
               </Link>
@@ -85,7 +85,7 @@ export function EsqueciSenha() {
               <div>
                 <Button
                   type="submit"
-                  className="w-full bg-emerald-600 hover:bg-emerald-700 flex justify-center"
+                  className="w-full bg-gradient-to-r from-[#0d2f52] to-[#4e7fa6] hover:from-[#0a2440] hover:to-[#3d6e95] flex justify-center"
                   disabled={enviando}
                 >
                   {enviando ? (

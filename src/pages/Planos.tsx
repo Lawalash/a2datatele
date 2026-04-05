@@ -134,10 +134,10 @@ export function Planos() {
     <div className="space-y-6">
       <div className="flex items-center justify-between">
         <div>
-          <h1 className="text-2xl font-bold text-slate-900">Planos e Preços</h1>
-          <p className="text-slate-500">Gerencie a tabela de valores do sistema</p>
+          <h1 className="text-2xl font-bold text-[#0d2f52] tracking-tight">Planos e Preços</h1>
+          <p className="text-[#4e7fa6] text-sm">Gerencie a tabela de valores do sistema</p>
         </div>
-        <Button onClick={() => handleOpenModal()} className="bg-emerald-600 hover:bg-emerald-700">
+        <Button onClick={() => handleOpenModal()} className="bg-gradient-to-r from-[#0d2f52] to-[#4e7fa6] hover:from-[#0a2440] hover:to-[#3d6e95] shadow-md shadow-[#0d2f52]/15">
           <Plus className="w-4 h-4 mr-2" />
           Novo Plano
         </Button>
@@ -150,7 +150,7 @@ export function Planos() {
         <CardContent className="p-0">
           {loading ? (
              <div className="flex items-center justify-center py-20">
-               <Loader2 className="w-6 h-6 text-emerald-600 animate-spin" />
+               <Loader2 className="w-6 h-6 text-[#4e7fa6] animate-spin" />
                <span className="ml-3 text-slate-500">Carregando planos...</span>
              </div>
           ) : (
@@ -173,13 +173,13 @@ export function Planos() {
                         {plan.forma_pagamento}
                       </Badge>
                     </TableCell>
-                    <TableCell className="font-semibold text-emerald-700">
+                    <TableCell className="font-semibold text-[#0d2f52]">
                       {formatCurrency(plan.valor)}
                     </TableCell>
                     <TableCell>
                       <button onClick={() => toggleAtivo(plan)} className="focus:outline-none">
                         {plan.ativo ? (
-                          <div className="flex items-center text-emerald-600 gap-1.5 text-sm font-medium hover:text-emerald-700">
+                          <div className="flex items-center text-[#4e7fa6] gap-1.5 text-sm font-medium hover:text-[#0d2f52]">
                             <CheckCircle className="w-4 h-4" /> Ativo
                           </div>
                         ) : (
@@ -267,7 +267,7 @@ export function Planos() {
               <Button type="button" variant="outline" onClick={() => setIsModalOpen(false)}>
                 Cancelar
               </Button>
-              <Button type="submit" disabled={saving} className="bg-emerald-600 hover:bg-emerald-700">
+              <Button type="submit" disabled={saving} className="bg-gradient-to-r from-[#0d2f52] to-[#4e7fa6] hover:from-[#0a2440] hover:to-[#3d6e95]">
                 {saving ? 'Salvando...' : 'Salvar Plano'}
               </Button>
             </div>

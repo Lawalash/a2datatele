@@ -116,7 +116,7 @@ export function NovoPaciente() {
         <Card>
           <CardHeader>
             <CardTitle className="flex items-center gap-2">
-              <UserPlus className="w-5 h-5 text-emerald-600" />
+              <UserPlus className="w-5 h-5 text-[#4e7fa6]" />
               Informações Básicas
             </CardTitle>
           </CardHeader>
@@ -235,7 +235,7 @@ export function NovoPaciente() {
               </Button>
               <Button
                 type="submit"
-                className="bg-emerald-600 hover:bg-emerald-700"
+                className="bg-gradient-to-r from-[#0d2f52] to-[#4e7fa6] hover:from-[#0a2440] hover:to-[#3d6e95]"
                 disabled={createMutation.isPending}
               >
                 {createMutation.isPending ? (

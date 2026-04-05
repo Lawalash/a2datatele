@@ -30,18 +30,18 @@ export function Header() {
   const roleLabel = role === 'admin' ? 'Admin' : role === 'operadora' ? 'Operadora' : 'Viewer';
 
   return (
-    <header className="h-16 bg-white border-b border-slate-200 flex items-center justify-between px-4 lg:px-6 sticky top-0 z-40">
+    <header className="h-16 bg-white/80 backdrop-blur-md border-b border-[#e8eaed] flex items-center justify-between px-4 lg:px-6 sticky top-0 z-40">
       <div className="flex items-center">
         <MobileNav />
       </div>
 
       {/* Right side */}
-      <div className="flex items-center gap-4">
+      <div className="flex items-center gap-3">
         {/* Notificações */}
         <DropdownMenu>
           <DropdownMenuTrigger asChild>
-            <Button variant="ghost" size="icon" className="relative">
-              <Bell className="w-5 h-5 text-slate-600" />
+            <Button variant="ghost" size="icon" className="relative hover:bg-[#e8eaed]/60">
+              <Bell className="w-5 h-5 text-[#4e7fa6]" />
               {unreadCount > 0 && (
                 <span className="absolute -top-1 -right-1 w-5 h-5 bg-red-500 text-white text-xs rounded-full flex items-center justify-center font-medium animate-pulse">
                   {unreadCount}
@@ -74,13 +74,13 @@ export function Header() {
                     <div className="flex items-start justify-between w-full gap-2">
                       <span
                         className={`font-medium text-sm ${
-                          !notif.lida ? 'text-slate-900' : 'text-slate-600'
+                          !notif.lida ? 'text-[#0d2f52]' : 'text-slate-600'
                         }`}
                       >
                         {notif.titulo}
                       </span>
                       {!notif.lida && (
-                        <span className="w-2 h-2 bg-red-500 rounded-full flex-shrink-0 mt-1" />
+                        <span className="w-2 h-2 bg-[#7aadc8] rounded-full flex-shrink-0 mt-1" />
                       )}
                     </div>
                     <span className="text-xs text-slate-500 mt-1">
@@ -89,7 +89,7 @@ export function Header() {
                     {notif.patientId && (
                       <Link
                         to={`/pacientes/${notif.patientId}`}
-                        className="text-xs text-emerald-600 hover:underline mt-1"
+                        className="text-xs text-[#4e7fa6] hover:text-[#0d2f52] hover:underline mt-1 font-medium"
                         onClick={(e) => e.stopPropagation()}
                       >
                         Ver paciente →
@@ -108,21 +108,21 @@ export function Header() {
         {/* Usuário */}
         <DropdownMenu>
           <DropdownMenuTrigger asChild>
-            <Button variant="ghost" className="flex items-center gap-3 h-10 px-2">
+            <Button variant="ghost" className="flex items-center gap-3 h-10 px-2 hover:bg-[#e8eaed]/60">
               <Avatar className="w-8 h-8">
-                <AvatarFallback className="bg-emerald-100 text-emerald-700 text-sm font-medium">
+                <AvatarFallback className="bg-gradient-to-br from-[#0d2f52] to-[#4e7fa6] text-white text-sm font-semibold">
                   {initials}
                 </AvatarFallback>
               </Avatar>
               <div className="hidden md:flex flex-col items-start leading-none gap-0.5">
-                <span className="text-sm font-semibold text-slate-900 leading-tight">
+                <span className="text-sm font-semibold text-[#0d2f52] leading-tight">
                   {nome}
                 </span>
                 <div className="flex items-center gap-1.5">
                   <span className="text-[10px] text-slate-500 font-medium">
                     {user?.email}
                   </span>
-                  <Badge variant="secondary" className="text-[10px] px-1 py-0 h-3.5 bg-emerald-50 text-emerald-700 border-emerald-100 uppercase">
+                  <Badge variant="secondary" className="text-[10px] px-1 py-0 h-3.5 bg-[#7aadc8]/15 text-[#0d2f52] border-[#7aadc8]/30 uppercase font-semibold">
                     {roleLabel}
                   </Badge>
                 </div>

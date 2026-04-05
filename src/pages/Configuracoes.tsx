@@ -55,8 +55,8 @@ export function Configuracoes() {
     <div className="space-y-6 max-w-4xl mx-auto">
       {/* Header */}
       <div>
-        <h1 className="text-2xl font-bold text-slate-900">Configurações</h1>
-        <p className="text-slate-500">Gerencie suas preferências do sistema</p>
+        <h1 className="text-2xl font-bold text-[#0d2f52] tracking-tight">Configurações</h1>
+        <p className="text-[#4e7fa6] text-sm">Gerencie suas preferências do sistema</p>
       </div>
 
       <Tabs defaultValue="perfil" className="w-full">
@@ -70,7 +70,7 @@ export function Configuracoes() {
           <Card>
             <CardHeader>
               <CardTitle className="flex items-center gap-2">
-                <User className="w-5 h-5 text-emerald-600" />
+                <User className="w-5 h-5 text-[#4e7fa6]" />
                 Dados do Perfil
               </CardTitle>
             </CardHeader>
@@ -145,7 +145,7 @@ export function Configuracoes() {
           <Card>
             <CardHeader>
               <CardTitle className="flex items-center gap-2">
-                <Shield className="w-5 h-5 text-emerald-600" />
+                <Shield className="w-5 h-5 text-[#4e7fa6]" />
                 Segurança
               </CardTitle>
             </CardHeader>
@@ -186,7 +186,7 @@ export function Configuracoes() {
             <Card>
               <CardHeader>
                 <CardTitle className="flex items-center gap-2">
-                  <Users className="w-5 h-5 text-emerald-600" />
+                  <Users className="w-5 h-5 text-[#4e7fa6]" />
                   Perfis Cadastrados
                 </CardTitle>
               </CardHeader>
@@ -216,7 +216,7 @@ export function Configuracoes() {
                             </SelectContent>
                           </Select>
                           
-                          {perfil.role === 'admin' && <Shield className="w-5 h-5 text-emerald-600" />}
+                          {perfil.role === 'admin' && <Shield className="w-5 h-5 text-[#4e7fa6]" />}
                           {perfil.role === 'operadora' && <User className="w-5 h-5 text-blue-600" />}
                         </div>
                       </div>

@@ -15,7 +15,7 @@ export function Unauthorized() {
           Entre em contato com o administrador se acredita que isso é um erro.
         </p>
         <Link to="/dashboard">
-          <Button className="bg-emerald-600 hover:bg-emerald-700">
+          <Button className="bg-gradient-to-r from-[#0d2f52] to-[#4e7fa6] hover:from-[#0a2440] hover:to-[#3d6e95]">
             Voltar ao Dashboard
           </Button>
         </Link>

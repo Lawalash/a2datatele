@@ -19,26 +19,40 @@ export async function exportPlanilhaQualityLife(patientIds: string[]) {
     if (!patients || patients.length === 0) return { error: 'Nenhum paciente encontrado.' };
 
     // 2. Montar dados formatados para a planilha
+    const formatCEP = (cep: string | null) => {
+      if (!cep) return '';
+      const num = cep.replace(/\D/g, '');
+      if (num.length === 8) return `${num.slice(0, 5)}-${num.slice(5)}`;
+      return num;
+    };
+
+    const getPlanType = (plano: string | null) => {
+      if (!plano) return '';
+      if (plano.toLowerCase().includes('individual')) return 'Individual';
+      if (plano.toLowerCase().includes('familiar')) return 'Familiar';
+      return plano;
+    };
+
     const rows = (patients as Patient[]).map((p) => ({
-      'NOME': p.nome,
+      'Nome': p.nome,
       'CPF': p.cpf.replace(/\D/g, ''),
-      'DATA_NASCIMENTO': p.data_nascimento
+      'Data de nascimento': p.data_nascimento
         ? formatDateBR(p.data_nascimento)
         : '',
-      'SEXO': p.sexo || '',
-      'CELULAR': p.celular.replace(/\D/g, ''),
-      'EMAIL': p.email || '',
-      'CEP': p.cep?.replace(/\D/g, '') || '',
-      'LOGRADOURO': p.logradouro || '',
-      'NUMERO': p.numero || '',
-      'COMPLEMENTO': p.complemento || '',
-      'BAIRRO': p.bairro || '',
-      'CIDADE': p.cidade || '',
+      'Sexo': p.sexo || '',
+      'Celular': p.celular.replace(/\D/g, ''),
+      'E-mail': p.email || '',
+      'CEP': formatCEP(p.cep),
+      'Logradouro': p.logradouro || '',
+      'Número': p.numero || '',
+      'Complemento': p.complemento || '',
+      'Bairro': p.bairro || '',
+      'Cidade': p.cidade || '',
       'UF': p.uf || '',
-      'PLANO': p.plano || '',
-      'FUNERAL?': p.funeral ? 'Sim' : 'Não',
-      'TELEPSICOLOGIA?': p.telepsicologia ? 'Sim' : 'Não',
-      'PRESENCIAL?': p.presencial ? 'Sim' : 'Não',
+      'Tipo de plano': getPlanType(p.plano),
+      'Funeral?': p.funeral ? 'Sim' : 'Não',
+      'Telepsicologia?': p.telepsicologia ? 'Sim' : 'Não',
+      'Presencial?': p.presencial ? 'Sim' : 'Não',
     }));
 
     // 3. Gerar XLSX
@@ -59,7 +73,7 @@ export async function exportPlanilhaQualityLife(patientIds: string[]) {
       { wch: 20 }, // BAIRRO
       { wch: 20 }, // CIDADE
       { wch: 4 },  // UF
-      { wch: 30 }, // PLANO
+      { wch: 16 }, // Tipo de plano
       { wch: 10 }, // FUNERAL?
       { wch: 16 }, // TELEPSICOLOGIA?
       { wch: 12 }, // PRESENCIAL?
