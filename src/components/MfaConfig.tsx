@@ -32,6 +32,16 @@ export function MfaConfig() {
   const handleEnroll = async () => {
     setIsEnrolling(true);
     const { data: { user } } = await supabase.auth.getUser();
+
+    // Remove old unverified factors to prevent "already exists" error
+    const { data: listData } = await supabase.auth.mfa.listFactors();
+    const unverified = listData?.all.filter((f: any) => f.status === 'unverified' && f.factor_type === 'totp');
+    if (unverified && unverified.length > 0) {
+      for (const f of unverified) {
+        await supabase.auth.mfa.unenroll({ factorId: f.id });
+      }
+    }
+
     const { data, error } = await supabase.auth.mfa.enroll({
       factorType: 'totp',
       issuer: 'A2 DATA Telemedicina',

@@ -19,6 +19,8 @@ interface AuthState {
   loadSession: () => Promise<void>;
 }
 
+let isListenerRegistered = false;
+
 export const useAuthStore = create<AuthState>((set) => ({
   user: null,
   session: null,
@@ -106,6 +108,9 @@ export const useAuthStore = create<AuthState>((set) => ({
   },
 
   loadSession: async () => {
+    if (isListenerRegistered) return;
+    isListenerRegistered = true;
+
     set({ loading: true });
 
     const {
