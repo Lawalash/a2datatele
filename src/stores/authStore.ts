@@ -144,21 +144,15 @@ export const useAuthStore = create<AuthState>((set) => ({
       });
     }
 
-    // Escutar mudanças de auth
-    supabase.auth.onAuthStateChange(async (event, session) => {
+    // Escutar mudanças de auth de forma síncrona para evitar Deadlock do Supabase Mutex
+    supabase.auth.onAuthStateChange((event, session) => {
       if (event === 'SIGNED_OUT') {
-        set({ user: null, session: null, role: null, profile: null, mfaRequired: false });
-      } else if (session?.user) {
-        const { data: mfaData } = await supabase.auth.mfa.getAuthenticatorAssuranceLevel();
-        const needsMfa = mfaData?.nextLevel === 'aal2' && mfaData?.currentLevel === 'aal1';
-
-        const { data: profileData } = await getCurrentUserProfile(session.user.id);
+        set({ user: null, session: null, role: null, profile: null, mfaRequired: false, initialized: true });
+      } else if (session?.user && event === 'TOKEN_REFRESHED') {
+        // Atualiza apenas a sessão para manter o token válido sem engasgar a rede com novos fetches
         set({
           user: session.user,
           session,
-          role: profileData?.role ?? 'viewer',
-          profile: profileData,
-          mfaRequired: needsMfa,
         });
       }
     });
